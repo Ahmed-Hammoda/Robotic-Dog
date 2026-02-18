@@ -1,0 +1,193 @@
+\documentclass[10pt,a4paper]{report}
+
+% ===== PACKAGES =====
+\usepackage{fontspec}
+\setmainfont{Arial}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{ifthen}
+\usepackage{titlesec}
+\usepackage[nottoc]{tocbibind}
+\usepackage[style=ieee, sorting=none]{biblatex}
+\addbibresource{references.bib}
+\usepackage{caption}
+\captionsetup[figure]{skip=0pt}
+\captionsetup[table]{skip=0pt}
+
+\usepackage{float}
+\usepackage{longtable}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{colortbl}
+\usepackage{pdfpages}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tocloft}
+\usepackage{titling}
+\usepackage{soul}
+\usepackage{circuitikz}
+\usepackage{ragged2e}
+\usepackage{pifont}
+\usepackage{multirow}
+\usepackage{listings}
+
+% ===== LISTINGS CONFIGURATION =====
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  framexleftmargin=5pt,
+  framexrightmargin=5pt,
+  framesep=5pt,
+  backgroundcolor=\color{gray!10},
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  captionpos=b
+}
+
+% ===== GLOSSARIES =====
+\usepackage[acronym,nopostdot,nonumberlist]{glossaries}
+\makeglossaries
+
+% Format unnumbered sections as centered
+\titleformat{name=\chapter,numberless}[block]
+  {\centering\Large\bfseries}
+  {}
+  {0pt}
+  {}
+
+% ===== TITLE PAGE COMMANDS =====
+\newcommand{\GetTitle}{Robotic Dog System\\with Adaptive Navigation and Mission Control}
+
+% Course / Module
+\newcommand{\GetCourse}{ISS496 -- Senior Project (CSE)}
+
+% Authors inline (not stacked)
+\newcommand{\GetAuthors}{%
+Ahmed Hamouda, Youssef Benmoussa, \\
+Aymen Saad, Mohamed Ali Damak, \\
+Ahmed Ridha Melayah%
+}
+
+\newcommand{\GetSecondAuthor}{Supervised by Enova ROBOTICS}
+\newcommand{\GetSchool}{Mediterranean Institute of Technology}
+\newcommand{\GetDate}{May 2026}
+
+% Subtitle (define it to avoid error)
+\newcommand{\GetSubtitle}{Project Report}
+
+% ===== DOCUMENT BEGINS HERE =====
+\begin{document}
+
+% ===== IMPROVED TITLE PAGE =====
+\newgeometry{margin=1.5cm, top=1.5cm, bottom=1.5cm}
+\begin{titlepage}
+\thispagestyle{empty}
+
+% Top Section: Logo and Institution
+\vspace*{0.5cm}
+\begin{center}
+    \includegraphics[width=0.33\linewidth]{images/MEDTECH-LOGO.png}
+
+    \vspace{0.5cm}
+    {\fontsize{12}{14}\selectfont \textbf{\GetSchool}}\\[4pt]
+    {\fontsize{11}{13}\selectfont \GetCourse}
+\end{center}
+
+\vspace{1.4cm}
+
+% Title
+\begin{center}
+    \rule{0.92\textwidth}{2pt}\\[14pt]
+    {\fontsize{22}{28}\selectfont \textbf{\GetTitle}}\\[10pt]
+    {\fontsize{13}{16}\selectfont \textit{\GetSubtitle}}\\[14pt]
+    \rule{0.92\textwidth}{2pt}
+\end{center}
+
+\vspace{1.2cm}
+
+% Authors (inline)
+\begin{center}
+    {\fontsize{12}{14}\selectfont \textbf{Authors:}}\\[6pt]
+    {\fontsize{11}{13}\selectfont \GetAuthors}\\[12pt]
+    {\fontsize{11}{13}\selectfont \GetSecondAuthor}
+\end{center}
+
+\vfill
+
+% Bottom Section
+\begin{center}
+    {\fontsize{10}{12}\selectfont \textbf{Date:} \GetDate}\\[10pt]
+
+    {\fontsize{9}{11}\selectfont
+        \textit{This report documents the complete design, implementation, testing, and validation}\\
+        \textit{of a robotic dog system meeting Foundation Priorities 1 \& 2}\\
+        \textit{and Feature Set 3 capabilities. Engineering grounded in safety principles}\\
+        \textit{and comprehensive testing protocols.}
+    }\\[10pt]
+
+\end{center}
+
+\end{titlepage}
+\restoregeometry
+
+
+% ===== TABLE OF CONTENTS AND LISTS =====
+\tableofcontents
+\newpage
+
+\listoffigures
+\newpage
+
+\listoftables
+\newpage
+
+
+% ===== FRONTMATTER (Acknowledgments, Abstract, Executive Summary) =====
+\input{chapters/frontmatter}
+
+
+% ===== CHAPTER 1: PROJECT OVERVIEW AND REQUIREMENTS ANALYSIS =====
+\input{chapters/chapter01_project_overview.tex}
+
+
+% ===== CHAPTER 2: SAFETY FRAMEWORK AND ASIMOV RULES =====
+\input{chapters/chapter02_benchmark.tex}
+\clearpage
+ 
+% ===== CHAPTER 3: SAFETY FRAMEWORK AND ASIMOV RULES =====
+\input{chapters/chapter03_safety_framework.tex}
+
+ 
+
+% ===== CHAPTER 4: AUTONOMOUS NAVIGATION SYSTEM (FP1) =====
+\input{chapters/chapter04_autonomous_navigation.tex}
+
+% ===== CHAPTER 5: MISSION ORCHESTRATION AND CONTROL (FP2) =====
+\input{chapters/chapter05_mission_orchestration.tex}
+
+% ===== CHAPTER 6: SUPERVISION PLATFORM AND TELEMETRY (FS3) =====
+\input{chapters/chapter06_supervision_platform.tex}
+
+
+% ===== CHAPTER 7: SYSTEM IMPLEMENTATION AND ARCHITECTURE =====
+\input{chapters/chapter07_implementation.tex}
+
+
+% ===== CHAPTER 8: TESTING, VALIDATION, AND RESULTS =====
+\input{chapters/chapter08_testing.tex}
+
+
+% ===== CHAPTER 9: CONCLUSION AND FUTURE WORK =====
+\input{chapters/chapter09_conclusion.tex}
+
+% ===== APPENDIX =====
+\appendix
+
+\printbibliography
+
+\end{document}

@@ -1,0 +1,72 @@
+\contentsline {chapter}{List of Figures}{3}{}%
+\contentsline {chapter}{List of Tables}{4}{}%
+\contentsline {chapter}{Acknowledgments}{5}{}%
+\contentsline {chapter}{Abstract}{6}{}%
+\contentsline {chapter}{Executive Summary}{7}{}%
+\contentsline {chapter}{\numberline {1}Project Overview }{8}{}%
+\contentsline {section}{\numberline {1.1}Introduction}{8}{}%
+\contentsline {section}{\numberline {1.2}Project Description}{8}{}%
+\contentsline {section}{\numberline {1.3}Priority-Based Requirements Framework}{8}{}%
+\contentsline {section}{\numberline {1.4}Problem Statement}{8}{}%
+\contentsline {section}{\numberline {1.5}Project Objectives}{8}{}%
+\contentsline {section}{\numberline {1.6}System Scope and Constraints}{8}{}%
+\contentsline {section}{\numberline {1.7}Asimov's Three Laws in Robotic Context}{8}{}%
+\contentsline {section}{\numberline {1.8}Conclusion}{8}{}%
+\contentsline {chapter}{\numberline {2}Benchmarking and Component Selection}{9}{}%
+\contentsline {section}{\numberline {2.1}Introduction}{9}{}%
+\contentsline {section}{\numberline {2.2}Reference Systems and Similar Designs}{9}{}%
+\contentsline {section}{\numberline {2.3}Benchmarking Methodology for Similar Designs}{9}{}%
+\contentsline {section}{\numberline {2.4}Comparative Benchmark Results}{9}{}%
+\contentsline {section}{\numberline {2.5}Component Selection Rationale}{9}{}%
+\contentsline {section}{\numberline {2.6}Trade-Off Analysis}{9}{}%
+\contentsline {section}{\numberline {2.7}Conclusion}{9}{}%
+\contentsline {chapter}{\numberline {3}Safety Framework }{10}{}%
+\contentsline {section}{\numberline {3.1}Introduction}{10}{}%
+\contentsline {section}{\numberline {3.2}Asimov's Three Laws Application Framework}{10}{}%
+\contentsline {section}{\numberline {3.3}Emergency Behavior Management }{10}{}%
+\contentsline {section}{\numberline {3.4}Manual Override Capability }{10}{}%
+\contentsline {section}{\numberline {3.5}Safety Compliance and Testing}{10}{}%
+\contentsline {section}{\numberline {3.6}Conclusion}{10}{}%
+\contentsline {chapter}{\numberline {4}Autonomous Navigation System }{11}{}%
+\contentsline {section}{\numberline {4.1}Introduction}{11}{}%
+\contentsline {section}{\numberline {4.2}Navigation Architecture}{11}{}%
+\contentsline {section}{\numberline {4.3}Localization }{11}{}%
+\contentsline {section}{\numberline {4.4}Obstacle Detection and Avoidance}{11}{}%
+\contentsline {section}{\numberline {4.5}Path Planning and Replanning }{11}{}%
+\contentsline {section}{\numberline {4.6}Motion Control}{11}{}%
+\contentsline {section}{\numberline {4.7}Conclusion}{11}{}%
+\contentsline {chapter}{\numberline {5}Mission Orchestration and Control}{12}{}%
+\contentsline {section}{\numberline {5.1}Introduction}{12}{}%
+\contentsline {section}{\numberline {5.2}Mission Control Architecture}{12}{}%
+\contentsline {section}{\numberline {5.3}Remote Mission Interface }{12}{}%
+\contentsline {section}{\numberline {5.4}Customizable Payload Interface }{12}{}%
+\contentsline {section}{\numberline {5.5}Mission Logging and Playback }{12}{}%
+\contentsline {section}{\numberline {5.6}Mission Orchestration Logic}{12}{}%
+\contentsline {section}{\numberline {5.7}Mission Performance Metrics}{12}{}%
+\contentsline {section}{\numberline {5.8}Conclusion}{12}{}%
+\contentsline {chapter}{\numberline {6}Supervision Platform and Telemetry}{13}{}%
+\contentsline {section}{\numberline {6.1}Introduction}{13}{}%
+\contentsline {section}{\numberline {6.2}Real-Time Telemetry Dashboard }{13}{}%
+\contentsline {section}{\numberline {6.3}Human-Robot Interaction}{13}{}%
+\contentsline {section}{\numberline {6.4}Multi-Modal Communication }{13}{}%
+\contentsline {section}{\numberline {6.5}Advanced Features}{13}{}%
+\contentsline {section}{\numberline {6.6}Supervision Platform Backend Architecture}{13}{}%
+\contentsline {section}{\numberline {6.7}Performance Metrics}{13}{}%
+\contentsline {section}{\numberline {6.8}Conclusion}{13}{}%
+\contentsline {chapter}{\numberline {7}System Implementation and Architecture}{14}{}%
+\contentsline {section}{\numberline {7.1}Introduction}{14}{}%
+\contentsline {section}{\numberline {7.2}Software Architecture}{14}{}%
+\contentsline {section}{\numberline {7.3}Hardware Platform Architecture}{14}{}%
+\contentsline {section}{\numberline {7.4}Integration Points}{14}{}%
+\contentsline {section}{\numberline {7.5}Development and Testing Infrastructure}{14}{}%
+\contentsline {section}{\numberline {7.6}Key Performance Indicators}{14}{}%
+\contentsline {chapter}{\numberline {8}Testing, Validation, and Results}{15}{}%
+\contentsline {section}{\numberline {8.1}Introduction}{15}{}%
+\contentsline {section}{\numberline {8.2}Testing Strategy}{15}{}%
+\contentsline {section}{\numberline {8.3}Functional Requirements Validation}{15}{}%
+\contentsline {chapter}{\numberline {9}Conclusion and Future Work}{16}{}%
+\contentsline {section}{\numberline {9.1}Project Achievements}{16}{}%
+\contentsline {section}{\numberline {9.2}Key Learnings}{16}{}%
+\contentsline {section}{\numberline {9.3}Performance Summary}{16}{}%
+\contentsline {section}{\numberline {9.4}Future Work and Enhancements}{16}{}%
+\contentsline {section}{\numberline {9.5}Recommendations for Deployment}{16}{}%
