@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPOT-MICRO // CONTROL INTERFACE</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070a0f; --bg2: #0d1117; --card: #111820;
+    --cyan: #00e8ff; --cdim: rgba(0,232,255,0.10); --cglow: rgba(0,232,255,0.28);
+    --amber: #ffab00; --adim: rgba(255,171,0,0.10);
+    --green: #00ff88; --gdim: rgba(0,255,136,0.10);
+    --red: #ff3a3a; --rdim: rgba(255,58,58,0.10);
+    --txt: #e8f4f8; --muted: #4a6275; --dim: #2a3f50; --bdr: rgba(0,232,255,0.13);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--txt);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.055) 2px,rgba(0,0,0,0.055) 4px);pointer-events:none;z-index:9999;}
+  body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,232,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,255,0.022) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+  .page{display:none;min-height:100vh;flex-direction:column;position:relative;z-index:1;animation:fi .35s ease;}
+  .page.active{display:flex;}
+  @keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+
+  /* HEADER */
+  .hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 26px;border-bottom:1px solid var(--bdr);background:rgba(7,10,15,.96);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;}
+  .logo{display:flex;align-items:center;gap:11px;}
+  .logo-txt{font-family:'Orbitron',sans-serif;font-weight:900;font-size:14px;letter-spacing:.2em;color:var(--cyan);text-shadow:0 0 18px var(--cglow);line-height:1.1;}
+  .logo-sub{font-size:9px;color:var(--muted);letter-spacing:.32em;}
+  .hdr-r{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+
+  .badge{display:flex;align-items:center;gap:7px;padding:5px 11px;border-radius:6px;border:1px solid var(--bdr);font-size:10px;letter-spacing:.12em;transition:all .4s;}
+  .badge.connecting{border-color:rgba(255,171,0,.3);color:var(--amber);}
+  .badge.connected{border-color:rgba(0,255,136,.3);color:var(--green);background:rgba(0,255,136,.05);}
+  .badge.disconnected{border-color:rgba(255,58,58,.3);color:var(--red);}
+  .badge.paired{border-color:rgba(0,174,255,.32);color:#00aeff;background:rgba(0,174,255,.05);}
+  .bdot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;}
+  .bdot.pulse{animation:pu 1.2s infinite;}
+  @keyframes pu{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  .bat-wrap{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:6px 11px;}
+  .bat-body{width:36px;height:17px;border:2px solid var(--cyan);border-radius:3px;position:relative;}
+  .bat-body::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:3px;height:7px;background:var(--cyan);border-radius:0 2px 2px 0;}
+  .bat-fill{height:100%;background:linear-gradient(90deg,var(--green),#00d4ff);border-radius:1px;transition:width 1s;box-shadow:0 0 7px rgba(0,255,136,.4);}
+  .bat-pct{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--green);text-shadow:0 0 9px var(--green);}
+
+  .back{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--bdr);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.12em;padding:6px 13px;border-radius:6px;cursor:pointer;transition:all .2s;}
+  .back:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cdim);}
+
+  /* MAIN */
+  .content{flex:1;display:flex;flex-direction:column;align-items:center;padding:26px;gap:24px;}
+
+  /* ROS CONNECTION PANEL */
+  .ros-panel{width:100%;max-width:720px;background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:20px 24px;}
+  .ros-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+  .ros-title{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--cyan);}
+
+  .ros-connect-btn{display:flex;align-items:center;gap:8px;background:var(--cdim);border:1px solid var(--cyan);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.15em;padding:9px 18px;border-radius:8px;cursor:pointer;transition:all .25s;}
+  .ros-connect-btn:hover{background:rgba(0,232,255,.2);box-shadow:0 0 20px var(--cglow);}
+  .ros-connect-btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+  .ros-disconnect-btn{display:flex;align-items:center;gap:8px;background:var(--rdim);border:1px solid var(--red);color:var(--red);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.15em;padding:9px 18px;border-radius:8px;cursor:pointer;transition:all .25s;display:none;}
+  .ros-disconnect-btn:hover{background:rgba(255,58,58,.18);}
+
+  .ros-stats{display:flex;gap:0;flex-wrap:wrap;}
+  .bs-item{display:flex;flex-direction:column;gap:3px;padding:10px 18px;border-right:1px solid var(--bdr);}
+  .bs-item:last-child{border-right:none;}
+  .bs-lbl{font-size:8px;color:var(--dim);letter-spacing:.15em;}
+  .bs-val{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--cyan);}
+
+  /* main buttons */
+  .main-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+  .mbtn{width:148px;height:168px;background:var(--card);border:1px solid var(--bdr);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+  .mbtn::before{content:'';position:absolute;inset:0;background:var(--bg-g,var(--cdim));opacity:0;transition:opacity .25s;border-radius:inherit;}
+  .mbtn:hover::before{opacity:1;}
+  .mbtn:hover{border-color:var(--ac,var(--cyan));transform:translateY(-3px);box-shadow:0 10px 30px var(--sh,var(--cglow));}
+  .mbtn-ico{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--ico,var(--cdim));border:1px solid var(--ac,var(--cyan));position:relative;z-index:1;}
+  .mbtn-ico svg{width:23px;height:23px;}
+  .mbtn-lbl{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--ac,var(--cyan));text-align:center;position:relative;z-index:1;}
+  .mbtn-desc{font-size:9px;color:var(--muted);letter-spacing:.06em;text-align:center;position:relative;z-index:1;max-width:112px;line-height:1.4;}
+  .cr{position:absolute;width:9px;height:9px;border-color:var(--ac,var(--cyan));border-style:solid;opacity:.38;}
+  .cr.tl{top:5px;left:5px;border-width:2px 0 0 2px;}
+  .cr.br{bottom:5px;right:5px;border-width:0 2px 2px 0;}
+  .bt-btn{--ac:var(--cyan);--bg-g:var(--cdim);--sh:var(--cglow);--ico:var(--cdim);}
+  .tmp-btn{--ac:var(--amber);--bg-g:var(--adim);--sh:rgba(255,171,0,.25);--ico:var(--adim);}
+  .mtr-btn{--ac:var(--green);--bg-g:var(--gdim);--sh:rgba(0,255,136,.25);--ico:var(--gdim);}
+
+  /* page titles */
+  .ptrow{padding:20px 26px 0;}
+  .pt{font-family:'Orbitron',sans-serif;font-size:19px;font-weight:900;letter-spacing:.14em;color:var(--amber);text-shadow:0 0 24px rgba(255,171,0,.3);}
+  .pt.cyan{color:var(--cyan);text-shadow:0 0 24px var(--cglow);}
+  .pt.grn{color:var(--green);text-shadow:0 0 24px rgba(0,255,136,.3);}
+  .psub{font-size:9px;color:var(--muted);letter-spacing:.13em;margin-top:4px;}
+
+  .scroll{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;}
+  .scroll::-webkit-scrollbar{width:3px;}
+  .scroll::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:99px;}
+
+  .fticker{border-top:1px solid var(--bdr);padding:7px 26px;font-size:9px;color:var(--dim);letter-spacing:.1em;display:flex;gap:22px;flex-wrap:wrap;}
+  .tv{color:var(--muted);}
+
+  /* ROS CONNECTION WARNING */
+  .ros-warn{background:rgba(255,58,58,.06);border:1px solid rgba(255,58,58,.25);border-radius:8px;padding:12px 16px;font-size:10px;color:var(--red);letter-spacing:.1em;display:none;}
+
+  /* PS4 PAGE */
+  .sec{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:18px 22px;margin:0 26px 14px;}
+  .sec-ttl{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--muted);margin-bottom:14px;}
+  .ax-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+  .ax-key{font-size:9px;color:var(--dim);letter-spacing:.06em;width:62px;flex-shrink:0;}
+  .ax-track{flex:1;height:5px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;position:relative;}
+  .ax-track::after{content:'';position:absolute;left:50%;top:0;width:1px;height:100%;background:rgba(255,255,255,.12);}
+  .ax-fill{height:100%;border-radius:99px;background:var(--cyan);box-shadow:0 0 5px var(--cyan);position:absolute;top:0;transition:left .05s,width .05s;}
+  .ax-fill.g{background:var(--green);box-shadow:0 0 5px var(--green);}
+  .ax-fill.a{background:var(--amber);box-shadow:0 0 5px var(--amber);}
+  .ax-val{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--muted);width:36px;text-align:right;flex-shrink:0;}
+
+  .stick-row{display:flex;gap:22px;justify-content:center;margin-bottom:14px;}
+  .stick-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .stick-lbl{font-size:8px;color:var(--dim);letter-spacing:.1em;}
+  .stick-field{width:80px;height:80px;border-radius:50%;border:1.5px solid rgba(0,232,255,.16);background:rgba(0,0,0,.3);position:relative;overflow:hidden;}
+  .stick-field::before{content:'';position:absolute;left:50%;top:0;width:1px;height:100%;background:rgba(0,232,255,.08);transform:translateX(-50%);}
+  .stick-field::after{content:'';position:absolute;top:50%;left:0;height:1px;width:100%;background:rgba(0,232,255,.08);transform:translateY(-50%);}
+  .sdot{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:top .05s,left .05s;}
+
+  .fb-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;}
+  .fb-grp{display:flex;flex-direction:column;gap:5px;}
+  .fb-lbl{font-size:8px;color:var(--dim);letter-spacing:.1em;}
+  .fb-btns{display:flex;gap:6px;}
+  .fb{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.07);font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .08s;cursor:default;}
+  .fb.active{box-shadow:0 0 14px currentColor;border-color:currentColor;background:rgba(255,255,255,.07);}
+  .xc{color:#5ac8ff;border-color:rgba(90,200,255,.2);}
+  .oc{color:#ff6b6b;border-color:rgba(255,107,107,.2);}
+  .sqc{color:#ff9de2;border-color:rgba(255,157,226,.2);}
+  .trc{color:#9dffa7;border-color:rgba(157,255,167,.2);}
+  .dpc{color:var(--muted);border-color:rgba(255,255,255,.07);border-radius:5px;}
+  .shc{color:var(--muted);border-color:rgba(255,255,255,.07);border-radius:5px;font-size:8px;width:32px;letter-spacing:.04em;}
+
+  .map-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .map-row{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--bg2);border-radius:6px;}
+  .map-key{font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;color:var(--cyan);min-width:74px;flex-shrink:0;}
+  .map-val{font-size:9px;color:var(--muted);}
+
+  .ros2-panel{width:100%;max-width:920px;background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;}
+  .ros2-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+  .ros2-panel-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--cyan);}
+  .ros2-panel-sub{font-size:9px;color:var(--dim);letter-spacing:.11em;line-height:1.4;}
+  .cam-shell{position:relative;border:1px solid rgba(0,232,255,.16);border-radius:10px;overflow:hidden;background:linear-gradient(180deg,rgba(0,232,255,.04),rgba(0,0,0,.36));aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;}
+  .cam-img{width:100%;height:100%;object-fit:cover;display:none;background:#02070b;}
+  .cam-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:var(--muted);font-size:11px;letter-spacing:.14em;line-height:1.5;}
+  .cam-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;}
+  .cam-kv{background:rgba(255,255,255,.03);border:1px solid rgba(0,232,255,.1);border-radius:8px;padding:8px 10px;min-width:0;}
+  .cam-kv span{display:block;font-size:8px;letter-spacing:.15em;color:var(--dim);margin-bottom:4px;}
+  .cam-kv strong{display:block;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:.08em;word-break:break-word;}
+  .cam-open-btn{margin-top:10px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border-radius:8px;border:1px solid rgba(0,232,255,.18);background:rgba(0,232,255,.06);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.14em;cursor:pointer;transition:all .2s;}
+  .cam-open-btn:hover{background:rgba(0,232,255,.14);box-shadow:0 0 16px rgba(0,232,255,.12);}
+  .cam-open-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+
+  /* TEMP PAGE */
+  .tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;padding:16px 26px;}
+  .tc{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:17px;position:relative;overflow:hidden;transition:border-color .25s;}
+  .tc-lbl{font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:.22em;color:var(--muted);margin-bottom:8px;}
+  .tv-big{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;line-height:1.08;margin-bottom:11px;word-break:break-word;}
+  .tv-big .deg{font-size:13px;vertical-align:super;}
+  .tbar{height:3px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;margin-bottom:6px;}
+  .tbar-fill{height:100%;border-radius:99px;transition:width 1.2s;}
+  .tstat{font-size:9px;letter-spacing:.1em;}
+  .tico{position:absolute;right:13px;top:13px;opacity:.07;font-size:34px;}
+  .tok .tv-big{color:var(--green);text-shadow:0 0 16px rgba(0,255,136,.35);}
+  .tok .tbar-fill{background:var(--green);}  .tok .tstat{color:var(--green);}
+  .twrm .tv-big{color:var(--amber);text-shadow:0 0 16px rgba(255,171,0,.35);}
+  .twrm .tbar-fill{background:var(--amber);} .twrm .tstat{color:var(--amber);}
+  .thot .tv-big{color:var(--red);text-shadow:0 0 16px rgba(255,58,58,.35);}
+  .thot .tbar-fill{background:var(--red);}   .thot .tstat{color:var(--red);}
+
+  /* MOTOR PAGE */
+  .mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px;padding:16px 26px;}
+  .mc{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:15px 17px;position:relative;overflow:hidden;transition:border-color .25s;}
+  .mc:hover{border-color:rgba(0,255,136,.26);}
+  .mc-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .mc-name{font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--muted);}
+  .mc-id{font-family:'Orbitron',sans-serif;font-size:9px;color:var(--green);opacity:.48;}
+  .mc-ang{font-family:'Orbitron',sans-serif;font-size:25px;font-weight:900;color:var(--green);text-shadow:0 0 12px rgba(0,255,136,.3);line-height:1;margin-bottom:10px;}
+  .mc-ang span{font-size:12px;color:var(--muted);}
+  input[type=range].mslider{-webkit-appearance:none;appearance:none;width:100%;height:5px;background:rgba(255,255,255,.05);border-radius:99px;outline:none;cursor:pointer;}
+  input[type=range].mslider::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--green);box-shadow:0 0 9px rgba(0,255,136,.5);border:2px solid var(--bg);cursor:pointer;transition:transform .15s;}
+  input[type=range].mslider::-webkit-slider-thumb:hover{transform:scale(1.22);}
+  input[type=range].mslider::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--green);border:2px solid var(--bg);}
+  .mc-lims{display:flex;justify-content:space-between;font-size:8px;color:var(--dim);margin-top:4px;}
+  .mc-tag{position:absolute;right:8px;top:8px;font-size:8px;letter-spacing:.09em;color:var(--dim);background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.1);border-radius:4px;padding:2px 5px;}
+  .reset-btn{margin:0 26px 26px;display:flex;align-items:center;gap:9px;background:transparent;border:1px solid rgba(0,255,136,.17);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.14em;padding:10px 20px;border-radius:8px;cursor:pointer;transition:all .2s;align-self:flex-start;}
+  .reset-btn:hover{background:var(--gdim);border-color:var(--green);}
+
+  /* toast */
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--green);border-radius:8px;padding:10px 15px;font-size:11px;color:var(--green);letter-spacing:.1em;z-index:10000;transform:translateY(80px);opacity:0;transition:all .3s;max-width:300px;pointer-events:none;}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.warn{border-color:var(--amber);color:var(--amber);}
+  .toast.err{border-color:var(--red);color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<div class="page active" id="pg-main">
+  <header class="hdr">
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 38 38" fill="none">
+        <rect x="8" y="10" width="22" height="14" rx="3" stroke="#00e8ff" stroke-width="1.5"/>
+        <rect x="13" y="6" width="12" height="6" rx="2" stroke="#00e8ff" stroke-width="1.5"/>
+        <line x1="10" y1="24" x2="10" y2="33" stroke="#00e8ff" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="15" y1="24" x2="15" y2="33" stroke="#00e8ff" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="23" y1="24" x2="23" y2="33" stroke="#00e8ff" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="28" y1="24" x2="28" y2="33" stroke="#00e8ff" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="17" cy="9" r="1.5" fill="#00e8ff"/>
+        <circle cx="21" cy="9" r="1.5" fill="#00e8ff"/>
+      </svg>
+      <div>
+        <div class="logo-txt">SPOT-MICRO</div>
+        <div class="logo-sub">CONTROL INTERFACE v2.0</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <div class="badge" id="ros-badge">
+        <div class="bdot" id="ros-dot" style="background:var(--dim);box-shadow:none;"></div>
+        <span id="ros-lbl">NOT CONNECTED</span>
+      </div>
+      <div class="badge" id="gp-badge">
+        <div class="bdot" id="gp-dot" style="background:var(--dim);box-shadow:none;"></div>
+        <span id="gp-lbl">NO CONTROLLER</span>
+      </div>
+      <div class="bat-wrap">
+        <div class="bat-body"><div class="bat-fill" id="bat-fill" style="width:0%"></div></div>
+        <div class="bat-pct" id="bat-pct">--%</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- dog -->
+    <svg width="220" height="115" viewBox="0 0 260 140" fill="none" style="opacity:.76">
+      <rect x="60" y="40" width="140" height="55" rx="8" stroke="#00e8ff" stroke-width="1.5" fill="rgba(0,232,255,0.04)"/>
+      <rect x="170" y="20" width="55" height="40" rx="6" stroke="#00e8ff" stroke-width="1.5" fill="rgba(0,232,255,0.04)"/>
+      <circle cx="185" cy="36" r="4" stroke="#00e8ff" stroke-width="1.5" fill="rgba(0,232,255,0.2)"/>
+      <circle cx="185" cy="36" r="1.5" fill="#00e8ff"/>
+      <rect x="180" y="13" width="16" height="9" rx="2" stroke="#00e8ff" stroke-width="1.2" fill="rgba(0,232,255,0.1)"/>
+      <path d="M60 62 Q40 50 35 40 Q32 32 40 30" stroke="#00e8ff" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <line x1="90" y1="95" x2="85" y2="128" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="85" y1="128" x2="75" y2="133" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="120" y1="95" x2="118" y2="128" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="118" y1="128" x2="108" y2="133" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="150" y1="95" x2="152" y2="128" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="152" y1="128" x2="162" y2="133" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="175" y1="95" x2="178" y2="128" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="178" y1="128" x2="188" y2="133" stroke="#00e8ff" stroke-width="2" stroke-linecap="round"/>
+      <line x1="30" y1="136" x2="230" y2="136" stroke="rgba(0,232,255,0.09)" stroke-width="1" stroke-dasharray="4 4"/>
+      <circle cx="90" cy="95" r="3" fill="#00e8ff" opacity=".5"/>
+      <circle cx="120" cy="95" r="3" fill="#00e8ff" opacity=".5"/>
+      <circle cx="150" cy="95" r="3" fill="#00e8ff" opacity=".5"/>
+      <circle cx="175" cy="95" r="3" fill="#00e8ff" opacity=".5"/>
+    </svg>
+
+    <!-- ROS bridge connection panel -->
+    <div class="ros-panel">
+      <div class="ros-top">
+        <div>
+          <div class="ros-title">ROSBRIDGE CONNECTION — RASPBERRY PI 5</div>
+          <div style="font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:.1em;">WebSocket rosbridge_server · Network telemetry · Production mode</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input id="ros-ip" value="127.0.0.1" placeholder="ROS bridge host/IP" style="width:240px;background:#06090e;border:1px solid var(--bdr);color:var(--txt);font-size:11px;padding:9px 10px;border-radius:8px;" />
+          <button class="ros-connect-btn" id="btn-connect" onclick="rosConnect()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
+            CONNECT ROS
+          </button>
+          <button class="ros-disconnect-btn" id="btn-disconnect" onclick="rosDisconnect()">✕ DISCONNECT</button>
+        </div>
+      </div>
+
+      <!-- Connection warning -->
+      <div class="ros-warn" id="ros-warn">
+        ⚠ Cannot reach ROS bridge. Verify rosbridge_server is running and the URL is correct.
+      </div>
+
+      <!-- Stats bar -->
+      <div class="ros-stats" id="ros-stats" style="border-top:1px solid var(--bdr);opacity:.4;transition:opacity .4s;">
+        <div class="bs-item"><div class="bs-lbl">DEVICE</div><div class="bs-val" id="s-device">--</div></div>
+        <div class="bs-item"><div class="bs-lbl">STM32</div><div class="bs-val" id="s-stm">--</div></div>
+        <div class="bs-item"><div class="bs-lbl">BATTERY</div><div class="bs-val" id="s-bat">--%</div></div>
+        <div class="bs-item"><div class="bs-lbl">UPTIME</div><div class="bs-val" id="s-uptime">--</div></div>
+        <div class="bs-item"><div class="bs-lbl">SIGNAL</div><div class="bs-val" id="s-rssi">-- dBm</div></div>
+      </div>
+    </div>
+
+    <div class="ros2-panel">
+      <div class="ros2-panel-head">
+        <div>
+          <div class="ros2-panel-title">ROS2 LIVE VIEW</div>
+          <div class="ros2-panel-sub">Telemetry and camera stream from /robodog/interface/status_json over rosbridge.</div>
+        </div>
+        <div class="ros2-panel-sub" id="ros2-main-summary">WAITING FOR ROS2 TELEMETRY</div>
+      </div>
+      <div class="cam-shell">
+        <img id="cam-img" class="cam-img" alt="Live MJPEG camera stream" />
+        <div class="cam-empty" id="cam-empty">NO CAMERA STREAM URL YET</div>
+      </div>
+      <div class="cam-meta">
+        <div class="cam-kv"><span>FPS</span><strong id="cam-fps">--</strong></div>
+        <div class="cam-kv"><span>DETECTIONS</span><strong id="cam-detections">--</strong></div>
+        <div class="cam-kv"><span>STREAM URL</span><strong id="cam-url">--</strong></div>
+      </div>
+      <button class="cam-open-btn" id="cam-open-btn" onclick="openStreamExternal()" disabled>OPEN STREAM EXTERNALLY</button>
+    </div>
+
+    <!-- 3 main buttons -->
+    <div class="main-btns">
+      <div class="mbtn bt-btn" onclick="goPage('pg-ps4')">
+        <div class="cr tl"></div><div class="cr br"></div>
+        <div class="mbtn-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00e8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
+          </svg>
+        </div>
+        <div class="mbtn-lbl">ROS CONTROLS</div>
+        <div class="mbtn-desc">Gamepad live cmd_vel</div>
+      </div>
+      <div class="mbtn tmp-btn" onclick="goPage('pg-temp')">
+        <div class="cr tl"></div><div class="cr br"></div>
+        <div class="mbtn-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffab00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+          </svg>
+        </div>
+        <div class="mbtn-lbl">ROS2 TELEMETRY</div>
+        <div class="mbtn-desc">Sensors, IMU, joystick, camera</div>
+      </div>
+      <div class="mbtn mtr-btn" onclick="goPage('pg-motor')">
+        <div class="cr tl"></div><div class="cr br"></div>
+        <div class="mbtn-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14M12 2v2M12 20v2M2 12h2M20 12h2"/>
+          </svg>
+        </div>
+        <div class="mbtn-lbl">MOTOR CTRL</div>
+        <div class="mbtn-desc">12 servo motors</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fticker">
+    <span>ROS BRIDGE &nbsp;<span class="tv" id="f-ros">IDLE</span></span>
+    <span>STM32 UART &nbsp;<span class="tv" id="f-stm">--</span></span>
+    <span>GAMEPAD API &nbsp;<span class="tv" id="f-gp">WAITING</span></span>
+    <span>MOTORS &nbsp;<span class="tv">12/12</span></span>
+  </div>
+</div>
+
+<!-- ══════════════════ PS4 PAGE ══════════════════ -->
+<div class="page" id="pg-ps4">
+  <header class="hdr">
+    <div class="logo"><button class="back" onclick="goPage('pg-main')">← BACK</button></div>
+    <div class="hdr-r">
+      <div class="badge" id="ros-badge-2"><div class="bdot" id="ros-dot-2" style="background:var(--dim);box-shadow:none;"></div><span id="ros-lbl-2">NOT CONNECTED</span></div>
+      <div class="bat-wrap"><div class="bat-body"><div class="bat-fill" id="bat-fill-2" style="width:0%"></div></div><div class="bat-pct" id="bat-pct-2">--%</div></div>
+    </div>
+  </header>
+  <div class="scroll">
+    <div class="ptrow"><div class="pt cyan">ROS // PS4</div><div class="psub">WEB GAMEPAD API — REAL-TIME CONTROLLER INPUT</div></div>
+
+    <div class="sec" style="margin-top:16px;">
+      <div class="sec-ttl">STICK VISUALIZER</div>
+      <div class="stick-row">
+        <div class="stick-wrap"><div class="stick-lbl">LEFT // WALK</div><div class="stick-field"><div class="sdot" id="ls-dot"></div></div></div>
+        <div class="stick-wrap"><div class="stick-lbl">RIGHT // YAW</div><div class="stick-field"><div class="sdot" id="rs-dot" style="background:var(--green);box-shadow:0 0 10px var(--green);"></div></div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div>
+          <div style="font-size:8px;color:var(--dim);letter-spacing:.1em;margin-bottom:9px;">LEFT STICK + TRIGGERS</div>
+          <div class="ax-row"><span class="ax-key">LX</span><div class="ax-track"><div class="ax-fill" id="lx-f" style="left:50%;width:0%"></div></div><span class="ax-val" id="lx-v">0.00</span></div>
+          <div class="ax-row"><span class="ax-key">LY</span><div class="ax-track"><div class="ax-fill g" id="ly-f" style="left:50%;width:0%"></div></div><span class="ax-val" id="ly-v">0.00</span></div>
+          <div class="ax-row" style="margin-top:5px;"><span class="ax-key">L2</span><div class="ax-track"><div class="ax-fill a" id="l2-f" style="left:0;width:0%"></div></div><span class="ax-val" id="l2-v">0.00</span></div>
+        </div>
+        <div>
+          <div style="font-size:8px;color:var(--dim);letter-spacing:.1em;margin-bottom:9px;">RIGHT STICK + TRIGGERS</div>
+          <div class="ax-row"><span class="ax-key">RX</span><div class="ax-track"><div class="ax-fill" id="rx-f" style="left:50%;width:0%"></div></div><span class="ax-val" id="rx-v">0.00</span></div>
+          <div class="ax-row"><span class="ax-key">RY</span><div class="ax-track"><div class="ax-fill g" id="ry-f" style="left:50%;width:0%"></div></div><span class="ax-val" id="ry-v">0.00</span></div>
+          <div class="ax-row" style="margin-top:5px;"><span class="ax-key">R2</span><div class="ax-track"><div class="ax-fill a" id="r2-f" style="left:0;width:0%"></div></div><span class="ax-val" id="r2-v">0.00</span></div>
+        </div>
+      </div>
+
+      <div class="fb-row">
+        <div class="fb-grp"><div class="fb-lbl">FACE</div><div class="fb-btns"><div class="fb sqc" id="b-sq">■</div><div class="fb xc" id="b-x">✕</div><div class="fb oc" id="b-o">●</div><div class="fb trc" id="b-tr">▲</div></div></div>
+        <div class="fb-grp"><div class="fb-lbl">SHOULDER</div><div class="fb-btns"><div class="fb shc" id="b-l1">L1</div><div class="fb shc" id="b-r1">R1</div><div class="fb shc" id="b-l2">L2</div><div class="fb shc" id="b-r2">R2</div></div></div>
+        <div class="fb-grp"><div class="fb-lbl">D-PAD</div><div class="fb-btns"><div class="fb dpc" id="b-up">↑</div><div class="fb dpc" id="b-dn">↓</div><div class="fb dpc" id="b-lt">←</div><div class="fb dpc" id="b-rt">→</div></div></div>
+        <div class="fb-grp"><div class="fb-lbl">SYSTEM</div><div class="fb-btns"><div class="fb shc" id="b-share" style="width:40px;font-size:7px;">SHARE</div><div class="fb shc" id="b-opts" style="width:40px;font-size:7px;">OPT</div><div class="fb shc" id="b-ps" style="font-size:8px;">PS</div></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-ttl">COMMAND MAPPING</div>
+      <div class="map-grid" id="map-grid"></div>
+    </div>
+  </div>
+  <div class="fticker">
+    <span>WEB GAMEPAD API &nbsp;<span class="tv">ACTIVE</span></span>
+    <span>ROS CMD_VEL &nbsp;<span class="tv">/robodog/interface/cmd_vel</span></span>
+    <span>DEAD ZONE &nbsp;<span class="tv">±0.08</span></span>
+  </div>
+</div>
+
+<!-- ══════════════════ TEMPERATURE PAGE ══════════════════ -->
+<div class="page" id="pg-temp">
+  <header class="hdr">
+    <div class="logo"><button class="back" onclick="goPage('pg-main')">← BACK</button></div>
+    <div class="hdr-r">
+      <div class="badge" id="ros-badge-3"><div class="bdot" id="ros-dot-3" style="background:var(--dim);box-shadow:none;"></div><span id="ros-lbl-3">NOT CONNECTED</span></div>
+      <div class="bat-wrap"><div class="bat-body"><div class="bat-fill" id="bat-fill-3" style="width:0%"></div></div><div class="bat-pct" id="bat-pct-3">--%</div></div>
+    </div>
+  </header>
+  <div class="scroll">
+    <div class="ptrow"><div class="pt">ROS2 TELEMETRY</div><div class="psub">LIVE FROM RPi5 VIA ROSBRIDGE /robodog/interface/status_json</div></div>
+    <div class="tgrid" id="tgrid"></div>
+  </div>
+  <div class="fticker">
+    <span>SOURCE &nbsp;<span class="tv">rosbridge WebSocket</span></span>
+    <span>TOPIC &nbsp;<span class="tv">/robodog/interface/status_json</span></span>
+    <span>STREAM &nbsp;<span class="tv">MJPEG IMG</span></span>
+  </div>
+</div>
+
+<!-- ══════════════════ MOTOR PAGE ══════════════════ -->
+<div class="page" id="pg-motor">
+  <header class="hdr">
+    <div class="logo"><button class="back" onclick="goPage('pg-main')">← BACK</button></div>
+    <div class="hdr-r">
+      <div class="badge" id="ros-badge-4"><div class="bdot" id="ros-dot-4" style="background:var(--dim);box-shadow:none;"></div><span id="ros-lbl-4">NOT CONNECTED</span></div>
+      <div class="bat-wrap"><div class="bat-body"><div class="bat-fill" id="bat-fill-4" style="width:0%"></div></div><div class="bat-pct" id="bat-pct-4">--%</div></div>
+    </div>
+  </header>
+  <div class="scroll">
+    <div class="ptrow"><div class="pt grn">MOTOR CONTROL</div><div class="psub">OPTIONAL UI TEST PANEL (NOT IN PRIMARY ROS DATA PATH)</div></div>
+    <div class="mgrid" id="mgrid"></div>
+    <button class="reset-btn" onclick="resetMotors()">↺ &nbsp;RESET ALL TO 0°</button>
+  </div>
+  <div class="fticker">
+    <span>PRIMARY CONTROL &nbsp;<span class="tv">ROS cmd_vel</span></span>
+    <span>RANGE &nbsp;<span class="tv">−90° TO +90°</span></span>
+    <span>ACTIVE &nbsp;<span class="tv">12/12</span></span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+  ROS BRIDGE CONFIG
+═══════════════════════════════════════════════════════════ */
+const DEFAULT_RPI_IP = '127.0.0.1';
+const ROSBRIDGE_PORT = 9090;
+const DEFAULT_CAMERA_STREAM_PATH = '/stream?topic=/robodog/camera/detections/image&type=mjpeg';
+const DEFAULT_CAMERA_STREAM_URL = `http://localhost:8080${DEFAULT_CAMERA_STREAM_PATH}`;
+const STATUS_TOPIC = '/robodog/interface/status_json';
+const STATUS_TOPIC_TYPE = 'std_msgs/msg/String';
+const CMD_VEL_TOPIC = '/robodog/interface/cmd_vel';
+
+/* ── connection state ── */
+function createBrowserSpotApiFallback() {
+  const handlers = new Map();
+  let ws = null;
+  let lastUrl = '';
+
+  function emit(channel, data) {
+    const listeners = handlers.get(channel);
+    if (!listeners) return;
+    listeners.forEach((fn) => {
+      try { fn(data); } catch (_) {}
+    });
+  }
+
+  function ensureListeners(channel) {
+    if (!handlers.has(channel)) handlers.set(channel, new Set());
+    return handlers.get(channel);
+  }
+
+  function closeSocket() {
+    if (!ws) return;
+    try { ws.close(); } catch (_) {}
+    ws = null;
+  }
+
+  return {
+    on: (channel, fn) => {
+      ensureListeners(channel).add(fn);
+    },
+    off: (channel) => {
+      handlers.delete(channel);
+    },
+    connectRos: (url) => {
+      closeSocket();
+      lastUrl = String(url || '').trim();
+      emit('ros-connection-state', {
+        state: 'connecting',
+        url: lastUrl,
+        message: `Connecting to ${lastUrl}`,
+      });
+
+      ws = new WebSocket(lastUrl);
+
+      ws.onopen = () => {
+        emit('ros-connection-state', {
+          state: 'connected',
+          url: lastUrl,
+          message: `Connected to ${lastUrl}`,
+        });
+        ws.send(JSON.stringify({
+          op: 'subscribe',
+          topic: STATUS_TOPIC,
+          type: STATUS_TOPIC_TYPE,
+        }));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const packet = JSON.parse(event.data);
+          const wrapped = packet?.msg?.data;
+          const parsed = typeof wrapped === 'string' ? JSON.parse(wrapped) : wrapped;
+          if (parsed && typeof parsed === 'object') emit('ros-state', parsed);
+        } catch (_) {}
+      };
+
+      ws.onerror = (event) => {
+        emit('ros-connection-state', {
+          state: 'error',
+          url: lastUrl,
+          message: event?.message || 'WebSocket error',
+        });
+      };
+
+      ws.onclose = () => {
+        emit('ros-connection-state', {
+          state: 'disconnected',
+          url: lastUrl,
+          message: 'rosbridge connection closed',
+        });
+        ws = null;
+      };
+    },
+    disconnectRos: () => {
+      closeSocket();
+    },
+    sendCmdVel: (payload) => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      const linearX = Number(payload?.linear_x ?? 0);
+      const angularZ = Number(payload?.angular_z ?? 0);
+      ws.send(JSON.stringify({
+        op: 'publish',
+        topic: CMD_VEL_TOPIC,
+        msg: {
+          linear: { x: Number.isFinite(linearX) ? linearX : 0, y: 0, z: 0 },
+          angular: { x: 0, y: 0, z: Number.isFinite(angularZ) ? angularZ : 0 },
+        },
+      }));
+    },
+  };
+}
+
+const spotAPI = window.spotAPI || createBrowserSpotApiFallback();
+let rosConnected = false;
+let ros2State = {
+  joy_cmd: { linear_x: null, angular_z: null },
+  joy_raw: { axes: [], buttons: [] },
+  sensors: {
+    temp1_c: null,
+    hum1_pct: null,
+    temp2_c: null,
+    hum2_pct: null,
+    ultrasonic1_cm: null,
+    ultrasonic2_cm: null,
+  },
+  imu: {
+    accel: { x: null, y: null, z: null },
+    gyro: { x: null, y: null, z: null },
+    mag: { x: null, y: null, z: null },
+    temp_c: null,
+  },
+  robot: { mode: '--', move: '--' },
+  camera: { fps: null, detections: '--', stream_url: '' },
+  system: { stm32_state: '', motors_enabled: null, battery_pct: null, uptime_s: null },
+  legacy: { rpi: null, stm: null, battery: null, motor_l: null, motor_r: null, reg1: null, reg2: null, ambient: null },
+};
+let activeCameraUrl = '';
+
+/* ── Page nav ── */
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ── Toast ── */
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ── Connection badge helper (syncs all 4 pages) ── */
+function setRosBadges(state, label) {
+  for (let i = 1; i <= 4; i++) {
+    const sfx = i === 1 ? '' : '-' + i;
+    const badge = document.getElementById('ros-badge' + sfx);
+    const dot   = document.getElementById('ros-dot'   + sfx);
+    const lbl   = document.getElementById('ros-lbl'   + sfx);
+    if (!badge) continue;
+    badge.className = 'badge ' + state;
+    if (state === 'connected') {
+      dot.style.cssText = 'background:var(--green);box-shadow:0 0 8px var(--green);';
+    } else if (state === 'connecting') {
+      dot.className = 'bdot pulse';
+      dot.style.cssText = 'background:var(--amber);box-shadow:0 0 8px var(--amber);';
+    } else {
+      dot.className = 'bdot';
+      dot.style.cssText = 'background:var(--dim);box-shadow:none;';
+    }
+    lbl.textContent = label;
+  }
+  document.getElementById('f-ros').textContent =
+    state === 'connected' ? 'CONNECTED' : state === 'connecting' ? 'CONNECTING...' : 'IDLE';
+}
+
+function setBattery(pct) {
+  const color = pct > 40 ? 'var(--green)' : pct > 20 ? 'var(--amber)' : 'var(--red)';
+  ['','2','3','4'].forEach(sfx => {
+    const f = document.getElementById('bat-fill' + (sfx ? '-'+sfx : ''));
+    const p = document.getElementById('bat-pct'  + (sfx ? '-'+sfx : ''));
+    if (f) f.style.width = pct + '%';
+    if (p) { p.textContent = pct + '%'; p.style.color = color; }
+  });
+  document.getElementById('s-bat').textContent = pct + '%';
+}
+
+function isFiniteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function deepMerge(target, source) {
+  if (!source || typeof source !== 'object') return target;
+  Object.keys(source).forEach((key) => {
+    const value = source[key];
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      if (!target[key] || typeof target[key] !== 'object' || Array.isArray(target[key])) {
+        target[key] = {};
+      }
+      deepMerge(target[key], value);
+    } else {
+      target[key] = value;
+    }
+  });
+  return target;
+}
+
+function valueOrDash(value, digits = 2, suffix = '') {
+  if (value === null || value === undefined || value === '') return '--';
+  const number = Number(value);
+  if (Number.isFinite(number)) return number.toFixed(digits) + suffix;
+  return String(value);
+}
+
+function fmtTemp(value) {
+  if (value === null || value === undefined || value === '') return '--';
+  const number = Number(value);
+  if (!Number.isFinite(number)) return String(value);
+  const digits = Number.isInteger(number) ? 1 : 2;
+  return number.toFixed(digits) + '°C';
+}
+
+function fmtPercent(value) {
+  if (value === null || value === undefined || value === '') return '--';
+  const number = Number(value);
+  if (!Number.isFinite(number)) return String(value);
+  const digits = Number.isInteger(number) ? 0 : 1;
+  return number.toFixed(digits) + '%';
+}
+
+function fmtDistance(value) {
+  if (value === null || value === undefined || value === '') return '--';
+  const number = Number(value);
+  if (!Number.isFinite(number)) return String(value);
+  return number.toFixed(Number.isInteger(number) ? 0 : 1) + ' cm';
+}
+
+function fmtVec(vec) {
+  if (!vec || typeof vec !== 'object') return '--';
+  const parts = ['x', 'y', 'z'].map((axis) => `${axis}:${valueOrDash(vec[axis], 2)}`);
+  return parts.join('  ');
+}
+
+function fmtJoyCmd(cmd) {
+  if (!cmd || typeof cmd !== 'object') return '--';
+  const lx = valueOrDash(cmd.linear_x, 2);
+  const az = valueOrDash(cmd.angular_z, 2);
+  return `LX ${lx} / AZ ${az}`;
+}
+
+function fmtJoyRaw(raw) {
+  if (!raw || typeof raw !== 'object') return '--';
+  const axes = Array.isArray(raw.axes) ? raw.axes : [];
+  const buttons = Array.isArray(raw.buttons) ? raw.buttons : [];
+  const axisPreview = axes.slice(0, 4).map((n) => valueOrDash(n, 2)).join(', ');
+  const pressedCount = buttons.reduce((count, value) => count + (value ? 1 : 0), 0);
+  return `axes[${axes.length}] ${axisPreview || '--'} | buttons[${buttons.length}] active ${pressedCount}`;
+}
+
+function fmtUptime(seconds) {
+  if (seconds === null || seconds === undefined || seconds === '') return '--';
+  const total = Number(seconds);
+  if (!Number.isFinite(total)) return String(seconds);
+  const hours = String(Math.floor(total / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const secs = String(Math.floor(total % 60)).padStart(2, '0');
+  return `${hours}:${minutes}:${secs}`;
+}
+
+function fmtStreamUrl(url) {
+  if (!url) return '--';
+  const text = String(url);
+  return text.length > 52 ? text.slice(0, 49) + '...' : text;
+}
+
+function patchRos2State(patch) {
+  deepMerge(ros2State, patch || {});
+  renderRos2Telemetry();
+}
+
+function toNumberOr(value, fallback = null) {
+  if (value === null || value === undefined || value === '') return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeRos2Payload(data) {
+  if (!data || typeof data !== 'object') return {};
+
+  const payload = JSON.parse(JSON.stringify(data));
+  const system = payload.system && typeof payload.system === 'object' ? payload.system : {};
+  const camera = payload.camera && typeof payload.camera === 'object' ? payload.camera : {};
+  const robot = payload.robot && typeof payload.robot === 'object' ? payload.robot : {};
+
+  if (system.stm32_state === undefined && payload.stm !== undefined) system.stm32_state = payload.stm;
+  if (system.battery_pct === undefined && payload.battery !== undefined) system.battery_pct = payload.battery;
+  if (system.uptime_s === undefined && payload.uptime !== undefined) system.uptime_s = payload.uptime;
+
+  const rawCameraUrl =
+    camera.stream_url ||
+    payload.stream_url ||
+    payload.streamUrl ||
+    camera.url ||
+    buildCameraStreamUrl(getRosIpFromInput()) ||
+    DEFAULT_CAMERA_STREAM_URL;
+  camera.stream_url = rewriteLoopbackCameraUrl(rawCameraUrl);
+  if (Array.isArray(camera.detections)) {
+    camera.detections = camera.detections.join(', ') || 'none';
+  }
+
+  system.battery_pct = toNumberOr(system.battery_pct, ros2State.system.battery_pct);
+  system.uptime_s = toNumberOr(system.uptime_s, ros2State.system.uptime_s);
+  camera.fps = toNumberOr(camera.fps, ros2State.camera.fps);
+
+  payload.system = system;
+  payload.camera = camera;
+  payload.robot = {
+    mode: robot.mode || ros2State.robot.mode,
+    move: robot.move || ros2State.robot.move,
+  };
+
+  return payload;
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function setHTML(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = value;
+}
+
+function sanitizeIpInput(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return DEFAULT_RPI_IP;
+
+  // Accept accidental full ws URL and normalize to host/IP only.
+  let host = raw.replace(/^wss?:\/\//i, '').split('/')[0];
+  if (host.includes(':')) host = host.split(':')[0];
+  return host || DEFAULT_RPI_IP;
+}
+
+function isLoopbackHost(host) {
+  const normalized = String(host || '').trim().toLowerCase();
+  return normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1' || normalized === '[::1]';
+}
+
+function buildCameraStreamUrl(host) {
+  const safeHost = sanitizeIpInput(host || DEFAULT_RPI_IP);
+  return `http://${safeHost}:8080${DEFAULT_CAMERA_STREAM_PATH}`;
+}
+
+function rewriteLoopbackCameraUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw);
+    if (!isLoopbackHost(parsed.hostname)) return parsed.toString();
+
+    const rosHost = getRosIpFromInput();
+    if (!rosHost || isLoopbackHost(rosHost)) return parsed.toString();
+
+    parsed.hostname = rosHost;
+    return parsed.toString();
+  } catch (_) {
+    return raw;
+  }
+}
+
+function rosUrlFromIp(ip) {
+  return `ws://${ip}:${ROSBRIDGE_PORT}`;
+}
+
+function getRosIpFromInput() {
+  const el = document.getElementById('ros-ip');
+  return sanitizeIpInput(el?.value || '');
+}
+
+function getRosUrlFromInput() {
+  return rosUrlFromIp(getRosIpFromInput());
+}
+
+function parseRosIpFromUrl(url) {
+  try {
+    const parsed = new URL(String(url || ''));
+    return parsed.hostname || DEFAULT_RPI_IP;
+  } catch (_) {
+    return sanitizeIpInput(url);
+  }
+}
+
+function renderRos2Telemetry() {
+  const state = ros2State;
+  const cameraUrl = state.camera?.stream_url || '';
+  if (cameraUrl !== activeCameraUrl) {
+    activeCameraUrl = cameraUrl;
+    const camImg = document.getElementById('cam-img');
+    const camEmpty = document.getElementById('cam-empty');
+    const camBtn = document.getElementById('cam-open-btn');
+    if (camImg && camEmpty && camBtn) {
+      if (cameraUrl) {
+        camImg.src = cameraUrl;
+        camImg.style.display = 'block';
+        camEmpty.style.display = 'none';
+        camBtn.disabled = false;
+      } else {
+        camImg.removeAttribute('src');
+        camImg.style.display = 'none';
+        camEmpty.style.display = 'flex';
+        camBtn.disabled = true;
+      }
+    }
+  }
+
+  const battery = isFiniteNumber(state.system?.battery_pct)
+    ? Number(state.system.battery_pct)
+    : isFiniteNumber(state.legacy?.battery)
+      ? Number(state.legacy.battery)
+      : null;
+  if (battery !== null) setBattery(Math.round(battery));
+
+  const stmState = state.system?.stm32_state || state.legacy?.stm || '--';
+  setText('s-stm', stmState || '--');
+  setText('f-stm', stmState || '--');
+  setText('s-uptime', fmtUptime(state.system?.uptime_s));
+  setText('cam-fps', valueOrDash(state.camera?.fps, 1));
+  setText('cam-detections', state.camera?.detections ? String(state.camera.detections) : '--');
+  setText('cam-url', fmtStreamUrl(cameraUrl));
+  setText('ros2-main-summary', `MODE ${state.robot?.mode || '--'} · MOVE ${state.robot?.move || '--'} · BAT ${battery !== null ? `${Math.round(battery)}%` : '--'}`);
+
+  const summary = [
+    `CMD ${fmtJoyCmd(state.joy_cmd)}`,
+    `RAW ${fmtJoyRaw(state.joy_raw)}`,
+    `IMU ${fmtTemp(state.imu?.temp_c)}`,
+  ].join('  //  ');
+  setText('ros2-main-summary', `MODE ${state.robot?.mode || '--'} · MOVE ${state.robot?.move || '--'} · BAT ${battery !== null ? `${Math.round(battery)}%` : '--'}`);
+  const summaryEl = document.getElementById('ros2-main-summary');
+  if (summaryEl) summaryEl.title = summary;
+
+  const renderers = [
+    ['tv0', fmtTemp(state.sensors?.temp1_c), 'tb0', state.sensors?.temp1_c],
+    ['tv1', fmtPercent(state.sensors?.hum1_pct), 'tb1', state.sensors?.hum1_pct],
+    ['tv2', fmtTemp(state.sensors?.temp2_c), 'tb2', state.sensors?.temp2_c],
+    ['tv3', fmtPercent(state.sensors?.hum2_pct), 'tb3', state.sensors?.hum2_pct],
+    ['tv4', fmtDistance(state.sensors?.ultrasonic1_cm), 'tb4', state.sensors?.ultrasonic1_cm],
+    ['tv5', fmtDistance(state.sensors?.ultrasonic2_cm), 'tb5', state.sensors?.ultrasonic2_cm],
+    ['tv6', fmtTemp(state.imu?.temp_c), 'tb6', state.imu?.temp_c],
+    ['tv7', fmtVec(state.imu?.accel), 'tb7', null],
+    ['tv8', fmtVec(state.imu?.gyro), 'tb8', null],
+    ['tv9', fmtVec(state.imu?.mag), 'tb9', null],
+    ['tv10', fmtJoyCmd(state.joy_cmd), 'tb10', null],
+    ['tv11', fmtJoyRaw(state.joy_raw), 'tb11', null],
+    ['tv12', String(state.robot?.mode || '--'), 'tb12', null],
+    ['tv13', String(state.robot?.move || '--'), 'tb13', null],
+    ['tv14', valueOrDash(state.camera?.fps, 1) + ' fps', 'tb14', state.camera?.fps],
+    ['tv15', String(state.camera?.detections || '--'), 'tb15', null],
+    ['tv16', String(state.system?.stm32_state || state.legacy?.stm || '--'), 'tb16', null],
+    ['tv17', battery !== null ? `${Math.round(battery)}%` : '--', 'tb17', battery],
+    ['tv18', fmtUptime(state.system?.uptime_s), 'tb18', state.system?.uptime_s],
+    ['tv19', fmtStreamUrl(cameraUrl), 'tb19', null],
+  ];
+
+  renderers.forEach(([valueId, text, barId, metric]) => {
+    setText(valueId, text);
+    const bar = document.getElementById(barId);
+    if (bar) {
+      if (isFiniteNumber(metric)) {
+        const pct = Math.max(0, Math.min(100, Number(metric)));
+        bar.style.width = pct + '%';
+      } else {
+        bar.style.width = '0%';
+      }
+    }
+  });
+}
+
+function initTelemetryBridge() {
+  spotAPI.on('ros-connection-state', (data) => {
+    const state = data?.state || 'disconnected';
+    const label = state === 'connected'
+      ? 'ROS CONNECTED'
+      : state === 'connecting'
+        ? 'ROS CONNECTING...'
+        : state === 'error'
+          ? 'ROS ERROR'
+          : 'NOT CONNECTED';
+    rosConnected = state === 'connected';
+    setRosBadges(state, label);
+    if (state === 'connected') {
+      setText('s-device', 'ROSBRIDGE');
+      setText('s-rssi', data?.url || getRosUrlFromInput());
+      document.getElementById('btn-connect').style.display = 'none';
+      document.getElementById('btn-disconnect').style.display = 'flex';
+      document.getElementById('ros-stats').style.opacity = '1';
+      document.getElementById('ros-warn').style.display = 'none';
+      if (data?.url) {
+        const ipInput = document.getElementById('ros-ip');
+        if (ipInput) ipInput.value = parseRosIpFromUrl(data.url);
+      }
+      toast('ROS bridge connected');
+    } else if (state === 'disconnected') {
+      onRosDisconnect();
+    } else if (state === 'error') {
+      document.getElementById('ros-warn').style.display = 'block';
+      toast(data?.message || 'ROS connection error', 'err');
+    }
+  });
+
+  spotAPI.on('ros-state', (data) => {
+    patchRos2State(normalizeRos2Payload(data));
+  });
+}
+
+function openStreamExternal() {
+  const url = ros2State.camera?.stream_url || '';
+  if (!url) return;
+  try { window.open(url, '_blank', 'noopener,noreferrer'); } catch (_) {}
+}
+
+initTelemetryBridge();
+
+/* ═══════════════════════════════════════════════════════════
+   ROS CONNECT / DISCONNECT
+═══════════════════════════════════════════════════════════ */
+async function rosConnect() {
+  const url = getRosUrlFromInput();
+  setRosBadges('connecting', 'ROS CONNECTING...');
+  toast(`Connecting to ${url}`);
+  spotAPI.connectRos(url);
+}
+
+async function rosDisconnect() {
+  spotAPI.disconnectRos();
+}
+
+function onRosDisconnect() {
+  rosConnected = false;
+  document.getElementById('btn-connect').style.display = 'flex';
+  document.getElementById('btn-disconnect').style.display = 'none';
+  document.getElementById('ros-stats').style.opacity = '.4';
+  setRosBadges('disconnected', 'DISCONNECTED');
+  setText('s-device', '--');
+  setText('s-rssi', '--');
+  setText('s-bat', '--%');
+  ['','2','3','4'].forEach(sfx => {
+    const fill = document.getElementById('bat-fill' + (sfx ? '-'+sfx : ''));
+    const pct = document.getElementById('bat-pct' + (sfx ? '-'+sfx : ''));
+    if (fill) fill.style.width = '0%';
+    if (pct) { pct.textContent = '--%'; pct.style.color = 'var(--muted)'; }
+  });
+  document.getElementById('f-stm').textContent = '--';
+  patchRos2State({
+    camera: { stream_url: '', fps: null, detections: '--' },
+    robot: { mode: '--', move: '--' },
+    system: { stm32_state: '', battery_pct: null, uptime_s: null },
+    legacy: { stm: null, battery: null },
+  });
+  toast('ROS bridge disconnected', 'warn');
+}
+
+/* ── Optional manual motor UI (not used in ROS data path) ── */
+async function sendMotorCommand(id, angle) {
+  void id;
+  void angle;
+}
+
+function fmtTime(sec) {
+  const h = String(Math.floor(sec/3600)).padStart(2,'0');
+  const m = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PS4 — WEB GAMEPAD API (controller on user's machine)
+  Receives ROS telemetry from the RPi dashboard state
+═══════════════════════════════════════════════════════════ */
+const DEAD = 0.08;
+let gpIdx = null, rafId = null;
+let lastCmdVelPublishMs = 0;
+
+const BTN = { CROSS:0, CIRCLE:1, SQUARE:2, TRIANGLE:3, L1:4, R1:5, L2:6, R2:7, SHARE:8, OPTIONS:9, L3:10, R3:11, UP:12, DN:13, LT:14, RT:15, PS:16 };
+
+window.addEventListener('gamepadconnected', e => {
+  gpIdx = e.gamepad.index;
+  setGpBadge(true, e.gamepad.id);
+  if (!rafId) rafId = requestAnimationFrame(pollGamepad);
+  toast('🎮 Controller: ' + (e.gamepad.id||'').substring(0,28));
+});
+window.addEventListener('gamepaddisconnected', e => {
+  if (e.gamepad.index === gpIdx) {
+    gpIdx = null; setGpBadge(false);
+    cancelAnimationFrame(rafId); rafId = null;
+    toast('Controller disconnected', 'warn');
+  }
+});
+
+function setGpBadge(on, name) {
+  const b = document.getElementById('gp-badge');
+  const d = document.getElementById('gp-dot');
+  const l = document.getElementById('gp-lbl');
+  if (on) {
+    b.className = 'badge paired';
+    d.style.cssText = 'background:#00aeff;box-shadow:0 0 8px #00aeff;';
+    l.textContent = (name||'PS4').substring(0,20);
+  } else {
+    b.className = 'badge';
+    d.style.cssText = 'background:var(--dim);box-shadow:none;';
+    l.textContent = 'NO CONTROLLER';
+  }
+  document.getElementById('f-gp').textContent = on ? 'ACTIVE' : 'WAITING';
+}
+
+function dead(v) { return Math.abs(v) < DEAD ? 0 : v; }
+
+function pollGamepad() {
+  rafId = requestAnimationFrame(pollGamepad);
+  if (gpIdx === null) return;
+  const gp = navigator.getGamepads()[gpIdx];
+  if (!gp) return;
+  const ax = gp.axes, bt = gp.buttons;
+  const ps4 = {
+    lx: dead(ax[0]||0), ly: dead(ax[1]||0),
+    rx: dead(ax[2]||0), ry: dead(ax[3]||0),
+    l2: bt[BTN.L2]?.value||0, r2: bt[BTN.R2]?.value||0,
+    btn: {
+      cross: bt[BTN.CROSS]?.pressed, circle: bt[BTN.CIRCLE]?.pressed,
+      square: bt[BTN.SQUARE]?.pressed, triangle: bt[BTN.TRIANGLE]?.pressed,
+      l1: bt[BTN.L1]?.pressed, r1: bt[BTN.R1]?.pressed,
+      l2: bt[BTN.L2]?.pressed, r2: bt[BTN.R2]?.pressed,
+      up: bt[BTN.UP]?.pressed, down: bt[BTN.DN]?.pressed,
+      left: bt[BTN.LT]?.pressed, right: bt[BTN.RT]?.pressed,
+      share: bt[BTN.SHARE]?.pressed, options: bt[BTN.OPTIONS]?.pressed, ps: bt[BTN.PS]?.pressed,
+    }
+  };
+  updatePS4(ps4);
+
+  // Publish cmd_vel through rosbridge at a sane rate.
+  if (spotAPI && rosConnected) {
+    const now = Date.now();
+    if (now - lastCmdVelPublishMs >= 80) {
+      lastCmdVelPublishMs = now;
+      spotAPI.sendCmdVel({
+        linear_x: +(-ps4.ly).toFixed(3),
+        angular_z: +(-ps4.rx).toFixed(3),
+      });
+    }
+  }
+}
+
+function updatePS4(d) {
+  setAx('lx', d.lx||0, true);  setAx('ly', d.ly||0, true);
+  setAx('rx', d.rx||0, true);  setAx('ry', d.ry||0, true);
+  setAxUni('l2', d.l2||0);     setAxUni('r2', d.r2||0);
+  moveStick('ls-dot', d.lx||0, d.ly||0);
+  moveStick('rs-dot', d.rx||0, d.ry||0);
+  const btn = d.btn || d.buttons || {};
+  setFb('b-sq', btn.square);   setFb('b-x',  btn.cross);
+  setFb('b-o',  btn.circle);   setFb('b-tr', btn.triangle);
+  setFb('b-l1', btn.l1);       setFb('b-r1', btn.r1);
+  setFb('b-l2', btn.l2);       setFb('b-r2', btn.r2);
+  setFb('b-up', btn.up);       setFb('b-dn', btn.down);
+  setFb('b-lt', btn.left);     setFb('b-rt', btn.right);
+  setFb('b-share', btn.share); setFb('b-opts', btn.options); setFb('b-ps', btn.ps);
+}
+
+function setAx(id, val, bidir) {
+  const f = document.getElementById(id+'-f');
+  const v = document.getElementById(id+'-v');
+  if (!f) return;
+  if (bidir) {
+    if (val >= 0) { f.style.left = '50%'; f.style.width = (val*50)+'%'; }
+    else          { f.style.left = (50+val*50)+'%'; f.style.width = (-val*50)+'%'; }
+  }
+  if (v) v.textContent = val.toFixed(2);
+}
+function setAxUni(id, val) {
+  const f = document.getElementById(id+'-f');
+  if (f) { f.style.left = '0'; f.style.width = (val*100)+'%'; }
+  const v = document.getElementById(id+'-v');
+  if (v) v.textContent = val.toFixed(2);
+}
+function setFb(id, on) {
+  const el = document.getElementById(id);
+  if (el) on ? el.classList.add('active') : el.classList.remove('active');
+}
+function moveStick(id, x, y) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.left = (50 + x*42) + '%';
+  el.style.top  = (50 + y*42) + '%';
+}
+
+/* ─ command map ─ */
+const mapData = [
+  ['L-STICK','Walk fwd/back/strafe'], ['R-STICK','Yaw + body pitch'],
+  ['L2+R2','Speed throttle'],         ['L1','Crouch'],
+  ['R1','Stand tall'],                ['✕ CROSS','Sit'],
+  ['● CIRCLE','Stand'],              ['■ SQUARE','Wave/idle'],
+  ['▲ TRIANGLE','E-STOP'],           ['D-PAD ↑↓','Height adjust'],
+  ['D-PAD ←→','Gait toggle'],        ['OPTIONS','Calibrate'],
+];
+const mg2 = document.getElementById('map-grid');
+mapData.forEach(([k,v]) => {
+  const d = document.createElement('div'); d.className = 'map-row';
+  d.innerHTML = `<span class="map-key">${k}</span><span class="map-val">${v}</span>`;
+  mg2.appendChild(d);
+});
+
+/* ═══════════════════════════════════════════════════════════
+  TELEMETRY — updated from rosbridge JSON
+═══════════════════════════════════════════════════════════ */
+const telemetryCards = [
+  { title:'AHT10 #1 TEMPERATURE', icon:'🌡' },
+  { title:'AHT10 #1 HUMIDITY', icon:'💧' },
+  { title:'AHT10 #2 TEMPERATURE', icon:'🌡' },
+  { title:'AHT10 #2 HUMIDITY', icon:'💧' },
+  { title:'ULTRASONIC #1 DISTANCE', icon:'📡' },
+  { title:'ULTRASONIC #2 DISTANCE', icon:'📡' },
+  { title:'IMU TEMPERATURE', icon:'🧭' },
+  { title:'IMU ACCEL X/Y/Z', icon:'⟂' },
+  { title:'IMU GYRO X/Y/Z', icon:'⟳' },
+  { title:'IMU MAG X/Y/Z', icon:'⌁' },
+  { title:'JOYSTICK COMMAND', icon:'🎮' },
+  { title:'JOYSTICK RAW', icon:'▣' },
+  { title:'ROBOT MODE', icon:'🤖' },
+  { title:'ROBOT MOVE', icon:'↔' },
+  { title:'CAMERA FPS', icon:'▶' },
+  { title:'DETECTIONS', icon:'◌' },
+  { title:'STM32 STATE', icon:'⚡' },
+  { title:'BATTERY', icon:'🔋' },
+  { title:'UPTIME', icon:'⏱' },
+  { title:'STREAM URL', icon:'⛓' },
+];
+const tg = document.getElementById('tgrid');
+telemetryCards.forEach((d,i) => {
+  const c = document.createElement('div');
+  c.className = `tc tok`; c.id = `tc${i}`;
+  c.innerHTML = `<div class="tc-lbl">${d.title}</div>
+    <div class="tv-big" id="tv${i}">--</div>
+    <div class="tbar"><div class="tbar-fill" id="tb${i}" style="width:0%"></div></div>
+    <div class="tstat" id="ts${i}">WAITING FOR ROS2 TELEMETRY</div>
+    <div class="tico">${d.icon}</div>`;
+  tg.appendChild(c);
+});
+
+function updateTelemetryFromRos(temps) {
+  if (!temps || typeof temps !== 'object') return;
+  patchRos2State({
+    legacy: {
+      rpi: temps.rpi ?? ros2State.legacy.rpi,
+      stm: temps.stm ?? ros2State.legacy.stm,
+      battery: temps.battery ?? ros2State.legacy.battery,
+      motor_l: temps.motor_l ?? ros2State.legacy.motor_l,
+      motor_r: temps.motor_r ?? ros2State.legacy.motor_r,
+      reg1: temps.reg1 ?? ros2State.legacy.reg1,
+      reg2: temps.reg2 ?? ros2State.legacy.reg2,
+      ambient: temps.ambient ?? ros2State.legacy.ambient,
+    },
+    system: {
+      battery_pct: temps.battery ?? ros2State.system.battery_pct,
+      stm32_state: temps.stm ?? ros2State.system.stm32_state,
+    },
+  });
+}
+
+renderRos2Telemetry();
+
+/* ═══════════════════════════════════════════════════════════
+  MOTOR CONTROL — UI only
+═══════════════════════════════════════════════════════════ */
+const motorDefs = [
+  {id:'M01',leg:'FL',j:'HIP',  g:'FRONT-LEFT'},  {id:'M02',leg:'FL',j:'THIGH',g:'FRONT-LEFT'},
+  {id:'M03',leg:'FL',j:'KNEE', g:'FRONT-LEFT'},  {id:'M04',leg:'FR',j:'HIP',  g:'FRONT-RIGHT'},
+  {id:'M05',leg:'FR',j:'THIGH',g:'FRONT-RIGHT'}, {id:'M06',leg:'FR',j:'KNEE', g:'FRONT-RIGHT'},
+  {id:'M07',leg:'BL',j:'HIP',  g:'BACK-LEFT'},   {id:'M08',leg:'BL',j:'THIGH',g:'BACK-LEFT'},
+  {id:'M09',leg:'BL',j:'KNEE', g:'BACK-LEFT'},   {id:'M10',leg:'BR',j:'HIP',  g:'BACK-RIGHT'},
+  {id:'M11',leg:'BR',j:'THIGH',g:'BACK-RIGHT'},  {id:'M12',leg:'BR',j:'KNEE', g:'BACK-RIGHT'},
+];
+const mg = document.getElementById('mgrid');
+motorDefs.forEach((m,i) => {
+  const c = document.createElement('div'); c.className = 'mc';
+  c.innerHTML = `<div class="mc-tag">${m.g}</div>
+    <div class="mc-hdr"><div class="mc-name">${m.id} // ${m.leg} ${m.j}</div><div class="mc-id">SRV-${i+1}</div></div>
+    <div class="mc-ang" id="ma${i}">0<span>°</span></div>
+    <input type="range" class="mslider" id="ms${i}" min="-90" max="90" value="0"
+      oninput="onMotor(${i},this.value)" onchange="sendMotorCommand(${i},parseInt(this.value))">
+    <div class="mc-lims"><span>-90°</span><span>CENTER</span><span>+90°</span></div>`;
+  mg.appendChild(c);
+  updTrack(i, 0);
+});
+
+function onMotor(idx, val) {
+  const v = parseInt(val);
+  document.getElementById(`ma${idx}`).innerHTML = `${v}<span>°</span>`;
+  updTrack(idx, v);
+}
+function updTrack(idx, val) {
+  const s = document.getElementById(`ms${idx}`);
+  const p = ((val+90)/180*100);
+  s.style.background = `linear-gradient(90deg,rgba(0,255,136,.4) ${p}%,rgba(255,255,255,.05) ${p}%)`;
+}
+async function resetMotors() {
+  motorDefs.forEach((_,i) => { document.getElementById(`ms${i}`).value=0; onMotor(i,0); });
+  toast('ALL MOTORS RESET TO 0° (UI ONLY)');
+}
+
+/* ── initial defaults ── */
+window.addEventListener('load', () => {
+  const ipInput = document.getElementById('ros-ip');
+  if (ipInput && !ipInput.value) ipInput.value = DEFAULT_RPI_IP;
+});
+</script>
+</body>
+</html>
