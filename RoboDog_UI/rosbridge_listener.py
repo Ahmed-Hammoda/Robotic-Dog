@@ -1,6 +1,4 @@
 import json
-import threading
-import sys
 from datetime import datetime
 
 from websocket import WebSocketApp
@@ -15,8 +13,12 @@ def stamp() -> str:
     return datetime.now().strftime("%H:%M:%S")
 
 
+def log(message: str) -> None:
+    print(f"[{stamp()}] {message}", flush=True)
+
+
 def prompt_for_ip() -> str:
-    entered = input(f"ROS bridge host/IP [{DEFAULT_IP}]: ").strip()
+    entered = input(f"ROS bridge host/IP or ws URL [{DEFAULT_IP}]: ").strip()
     return entered or DEFAULT_IP
 
 
@@ -31,8 +33,8 @@ def pretty_print_telemetry(raw_payload: str) -> None:
     try:
         payload = json.loads(raw_payload)
     except json.JSONDecodeError as exc:
-        print(f"[{stamp()}] JSON parse error: {exc}")
-        print(f"[{stamp()}] Raw payload: {raw_payload}")
+        log(f"JSON parse error: {exc}")
+        log(f"Raw payload: {raw_payload}")
         return
 
     if isinstance(payload, dict) and "msg" in payload and isinstance(payload["msg"], dict) and "data" in payload["msg"]:
@@ -40,27 +42,27 @@ def pretty_print_telemetry(raw_payload: str) -> None:
         try:
             telemetry = json.loads(nested) if isinstance(nested, str) else nested
         except json.JSONDecodeError as exc:
-            print(f"[{stamp()}] Telemetry parse error: {exc}")
-            print(f"[{stamp()}] Raw nested data: {nested}")
+            log(f"Telemetry parse error: {exc}")
+            log(f"Raw nested data: {nested}")
             return
 
-        print(f"[{stamp()}] Telemetry JSON:")
-        print(json.dumps(telemetry, indent=2, ensure_ascii=False))
+        log("Telemetry JSON:")
+        print(json.dumps(telemetry, indent=2, ensure_ascii=False), flush=True)
         return
 
-    print(f"[{stamp()}] Message:")
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    log("Message:")
+    print(json.dumps(payload, indent=2, ensure_ascii=False), flush=True)
 
 
 def main() -> int:
     rpi_ip = prompt_for_ip()
     ws_url = build_url(rpi_ip)
-    print(f"[{stamp()}] Connecting to {ws_url}")
+    log(f"Connecting to {ws_url}")
 
-    done = threading.Event()
+    packet_count = 0
 
     def on_open(ws):
-        print(f"[{stamp()}] Connected")
+        log("Connected")
         ws.send(
             json.dumps(
                 {
@@ -70,17 +72,20 @@ def main() -> int:
                 }
             )
         )
-        print(f"[{stamp()}] Subscribed to {STATUS_TOPIC} as {STATUS_TYPE}")
+        log(f"Subscribed to {STATUS_TOPIC} as {STATUS_TYPE}")
+        log("Waiting for telemetry packets...")
 
     def on_message(_ws, message):
+        nonlocal packet_count
+        packet_count += 1
+        log(f"Packet #{packet_count}")
         pretty_print_telemetry(message)
 
     def on_error(_ws, error):
-        print(f"[{stamp()}] Error: {error}")
+        log(f"Error: {error}")
 
     def on_close(_ws, close_status_code, close_msg):
-        print(f"[{stamp()}] Closed: {close_status_code} {close_msg or ''}".strip())
-        done.set()
+        log(f"Closed: {close_status_code} {close_msg or ''}".strip())
 
     ws = WebSocketApp(
         ws_url,
@@ -93,9 +98,7 @@ def main() -> int:
     try:
         ws.run_forever()
     except KeyboardInterrupt:
-        print(f"\n[{stamp()}] Interrupted by user")
-    finally:
-        done.set()
+        log("Interrupted by user")
 
     return 0
 

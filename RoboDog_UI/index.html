@@ -1,9 +1,11 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPOT-MICRO // CONTROL INTERFACE</title>
+<title>ROBODOG // CONTROL INTERFACE</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -44,6 +46,7 @@
   .bat-body::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:3px;height:7px;background:var(--cyan);border-radius:0 2px 2px 0;}
   .bat-fill{height:100%;background:linear-gradient(90deg,var(--green),#00d4ff);border-radius:1px;transition:width 1s;box-shadow:0 0 7px rgba(0,255,136,.4);}
   .bat-pct{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--green);text-shadow:0 0 9px var(--green);}
+  .bat-title{font-size:10px;color:var(--dim);letter-spacing:.14em;margin-left:8px;text-transform:uppercase;white-space:nowrap;}
 
   .back{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--bdr);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.12em;padding:6px 13px;border-radius:6px;cursor:pointer;transition:all .2s;}
   .back:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cdim);}
@@ -84,6 +87,7 @@
   .bt-btn{--ac:var(--cyan);--bg-g:var(--cdim);--sh:var(--cglow);--ico:var(--cdim);}
   .tmp-btn{--ac:var(--amber);--bg-g:var(--adim);--sh:rgba(255,171,0,.25);--ico:var(--adim);}
   .mtr-btn{--ac:var(--green);--bg-g:var(--gdim);--sh:rgba(0,255,136,.25);--ico:var(--gdim);}
+  .imu-btn{--ac:#39d6ff;--bg-g:rgba(57,214,255,.11);--sh:rgba(57,214,255,.28);--ico:rgba(57,214,255,.12);}
 
   /* page titles */
   .ptrow{padding:20px 26px 0;}
@@ -144,16 +148,13 @@
   .ros2-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
   .ros2-panel-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--cyan);}
   .ros2-panel-sub{font-size:9px;color:var(--dim);letter-spacing:.11em;line-height:1.4;}
-  .cam-shell{position:relative;border:1px solid rgba(0,232,255,.16);border-radius:10px;overflow:hidden;background:linear-gradient(180deg,rgba(0,232,255,.04),rgba(0,0,0,.36));aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;}
-  .cam-img{width:100%;height:100%;object-fit:cover;display:none;background:#02070b;}
+  .cam-shell{position:relative;border:1px solid rgba(0,232,255,.16);border-radius:10px;overflow:hidden;background:linear-gradient(180deg,rgba(0,232,255,.04),rgba(0,0,0,.36));aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;width:100%;max-width:920px;max-height:56vh;margin:0 auto;}
+  .cam-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none;background:#02070b;}
   .cam-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;color:var(--muted);font-size:11px;letter-spacing:.14em;line-height:1.5;}
-  .cam-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;}
-  .cam-kv{background:rgba(255,255,255,.03);border:1px solid rgba(0,232,255,.1);border-radius:8px;padding:8px 10px;min-width:0;}
-  .cam-kv span{display:block;font-size:8px;letter-spacing:.15em;color:var(--dim);margin-bottom:4px;}
-  .cam-kv strong{display:block;font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:.08em;word-break:break-word;}
-  .cam-open-btn{margin-top:10px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border-radius:8px;border:1px solid rgba(0,232,255,.18);background:rgba(0,232,255,.06);color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.14em;cursor:pointer;transition:all .2s;}
-  .cam-open-btn:hover{background:rgba(0,232,255,.14);box-shadow:0 0 16px rgba(0,232,255,.12);}
-  .cam-open-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+  .cam-meta{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:12px;margin-top:12px;justify-items:center;text-align:center;max-width:460px;margin-left:auto;margin-right:auto;}
+  .cam-kv{background:rgba(255,255,255,.03);border:1px solid rgba(0,232,255,.1);border-radius:8px;padding:10px 12px;min-width:0;}
+  .cam-kv span{display:block;font-size:8px;letter-spacing:.15em;color:var(--dim);margin-bottom:5px;}
+  .cam-kv strong{display:block;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:var(--txt);letter-spacing:.08em;word-break:break-word;}
 
   /* TEMP PAGE */
   .tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;padding:16px 26px;}
@@ -171,6 +172,47 @@
   .twrm .tbar-fill{background:var(--amber);} .twrm .tstat{color:var(--amber);}
   .thot .tv-big{color:var(--red);text-shadow:0 0 16px rgba(255,58,58,.35);}
   .thot .tbar-fill{background:var(--red);}   .thot .tstat{color:var(--red);}
+  .tc.climate{border-color:rgba(0,232,255,.2);background:linear-gradient(170deg,rgba(0,232,255,.1),rgba(17,24,32,.9));}
+  .tc.climate .tc-lbl{color:#9bc3d8;letter-spacing:.2em;}
+  .tc.climate .tv-big{display:flex;align-items:baseline;gap:7px;line-height:1;}
+  .value-num{font-family:'Orbitron',sans-serif;font-weight:900;font-size:30px;}
+  .value-unit{font-family:'Share Tech Mono',monospace;font-size:12px;color:#9bc3d8;letter-spacing:.09em;}
+
+  /* MPU9250/6500 PAGE */
+  .imu-wrap{padding:18px 26px 26px;display:grid;grid-template-columns:minmax(460px,1fr) minmax(280px,360px);gap:14px;}
+  .imu-panel{background:var(--card);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;}
+  .imu-h{padding:12px 14px;border-bottom:1px solid rgba(0,232,255,.12);display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .imu-h .t{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--cyan);}
+  .imu-h .s{font-size:9px;letter-spacing:.12em;color:var(--dim);}
+  .imu-stage{position:relative;height:440px;background:radial-gradient(circle at 50% 40%,rgba(0,232,255,.08),rgba(6,10,14,.95));perspective:980px;perspective-origin:center center;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .imu-grid{position:absolute;left:50%;top:50%;width:900px;height:900px;transform:translate(-50%,-50%) rotateX(72deg) translateZ(-16px);transform-style:preserve-3d;background-image:linear-gradient(rgba(0,232,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,255,.06) 1px,transparent 1px);background-size:44px 44px;opacity:.22;filter:drop-shadow(0 0 12px rgba(0,232,255,.10));}
+  .imu-cube-wrap{position:relative;transform-style:preserve-3d;transform:translateZ(0px);}
+  .imu-cube{position:relative;width:140px;height:90px;transform-style:preserve-3d;transition:transform .07s linear;}
+  .imu-face{position:absolute;inset:0;border:1px solid rgba(0,232,255,.28);background:linear-gradient(160deg,rgba(0,232,255,.12),rgba(0,0,0,.45));box-shadow:0 0 22px rgba(0,232,255,.15) inset;display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.12em;color:#b9f4ff;}
+  .imu-face.front{transform:translateZ(35px);} 
+  .imu-face.back{transform:rotateY(180deg) translateZ(35px);} 
+  .imu-face.left{width:70px;left:35px;transform:rotateY(-90deg) translateZ(70px);} 
+  .imu-face.right{width:70px;left:35px;transform:rotateY(90deg) translateZ(70px);} 
+  .imu-face.top{height:70px;top:10px;transform:rotateX(90deg) translateZ(45px);} 
+  .imu-face.bottom{height:70px;top:10px;transform:rotateX(-90deg) translateZ(45px);} 
+  .imu-axis{position:absolute;left:50%;top:50%;transform-style:preserve-3d;pointer-events:none;}
+  .imu-axis i{position:absolute;display:block;height:2px;transform-origin:left center;}
+  .imu-axis .x{width:150px;background:#ff5a5a;transform:translate3d(0,0,0);} 
+  .imu-axis .y{width:150px;background:#6aff9f;transform:rotateZ(90deg);} 
+  .imu-axis .z{width:120px;background:#47b8ff;transform:rotateY(-90deg);} 
+  .imu-axis-lbl{position:absolute;font-size:10px;letter-spacing:.14em;color:var(--muted);} 
+  .imu-axis-lbl.x{left:calc(50% + 160px);top:calc(50% - 6px);color:#ff8484;} 
+  .imu-axis-lbl.y{left:calc(50% - 6px);top:calc(50% - 164px);color:#8fffb7;} 
+  .imu-axis-lbl.z{left:calc(50% - 150px);top:calc(50% + 12px);color:#7fd0ff;} 
+  .imu-side{padding:12px;display:grid;gap:10px;}
+  .imu-read{background:rgba(255,255,255,.03);border:1px solid rgba(0,232,255,.12);border-radius:9px;padding:10px;}
+  .imu-read h4{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:.18em;color:var(--cyan);margin-bottom:8px;}
+  .imu-vec{font-size:11px;line-height:1.7;color:#b7d8e8;}
+  .imu-orient{display:block;color:#b7d8e8;font-size:13px;letter-spacing:.04em;line-height:1.7;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(0,232,255,.1);border-radius:10px;}
+  @media (max-width: 1080px){
+    .imu-wrap{grid-template-columns:1fr;}
+    .imu-stage{height:360px;}
+  }
 
   /* MOTOR PAGE */
   .mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px;padding:16px 26px;}
@@ -214,8 +256,8 @@
         <circle cx="21" cy="9" r="1.5" fill="#00e8ff"/>
       </svg>
       <div>
-        <div class="logo-txt">SPOT-MICRO</div>
-        <div class="logo-sub">CONTROL INTERFACE v2.0</div>
+        <div class="logo-txt">ROBODOG</div>
+        <div class="logo-sub">Control interface</div>
       </div>
     </div>
     <div class="hdr-r">
@@ -227,9 +269,10 @@
         <div class="bdot" id="gp-dot" style="background:var(--dim);box-shadow:none;"></div>
         <span id="gp-lbl">NO CONTROLLER</span>
       </div>
-      <div class="bat-wrap">
-        <div class="bat-body"><div class="bat-fill" id="bat-fill" style="width:0%"></div></div>
-        <div class="bat-pct" id="bat-pct">--%</div>
+      <div class="bat-wrap" title="PC battery">
+        <div class="bat-body"><div class="bat-fill" id="pc-bat-fill" style="width:0%"></div></div>
+        <div class="bat-pct" id="pc-bat-pct">--%</div>
+        <span class="bat-title">PC BATTERY</span>
       </div>
     </div>
   </header>
@@ -263,11 +306,10 @@
     <div class="ros-panel">
       <div class="ros-top">
         <div>
-          <div class="ros-title">ROSBRIDGE CONNECTION — RASPBERRY PI 5</div>
-          <div style="font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:.1em;">WebSocket rosbridge_server · Network telemetry · Production mode</div>
+          <div class="ros-title">ROBODOG CONNECTION</div>
+          <div style="font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:.1em;">Robot connection status and telemetry.</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
-          <input id="ros-ip" value="127.0.0.1" placeholder="ROS bridge host/IP" style="width:240px;background:#06090e;border:1px solid var(--bdr);color:var(--txt);font-size:11px;padding:9px 10px;border-radius:8px;" />
           <button class="ros-connect-btn" id="btn-connect" onclick="rosConnect()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/></svg>
             CONNECT ROS
@@ -278,15 +320,14 @@
 
       <!-- Connection warning -->
       <div class="ros-warn" id="ros-warn">
-        ⚠ Cannot reach ROS bridge. Verify rosbridge_server is running and the URL is correct.
+        ⚠ Cannot reach robot. Verify the connection is active.
       </div>
 
       <!-- Stats bar -->
       <div class="ros-stats" id="ros-stats" style="border-top:1px solid var(--bdr);opacity:.4;transition:opacity .4s;">
         <div class="bs-item"><div class="bs-lbl">DEVICE</div><div class="bs-val" id="s-device">--</div></div>
         <div class="bs-item"><div class="bs-lbl">STM32</div><div class="bs-val" id="s-stm">--</div></div>
-        <div class="bs-item"><div class="bs-lbl">BATTERY</div><div class="bs-val" id="s-bat">--%</div></div>
-        <div class="bs-item"><div class="bs-lbl">UPTIME</div><div class="bs-val" id="s-uptime">--</div></div>
+        <div class="bs-item"><div class="bs-lbl">PC BATTERY</div><div class="bs-val" id="s-bat">--%</div></div>
         <div class="bs-item"><div class="bs-lbl">SIGNAL</div><div class="bs-val" id="s-rssi">-- dBm</div></div>
       </div>
     </div>
@@ -294,24 +335,14 @@
     <div class="ros2-panel">
       <div class="ros2-panel-head">
         <div>
-          <div class="ros2-panel-title">ROS2 LIVE VIEW</div>
-          <div class="ros2-panel-sub">Telemetry and camera stream from /robodog/interface/status_json over rosbridge.</div>
+          <div class="ros2-panel-title">ROBO DOG LIVE VIEW</div>
+          <div class="ros2-panel-sub">Live robot status summary.</div>
         </div>
-        <div class="ros2-panel-sub" id="ros2-main-summary">WAITING FOR ROS2 TELEMETRY</div>
+        <div class="ros2-panel-sub" id="ros2-main-summary">WAITING FOR ROBOT STATUS</div>
       </div>
-      <div class="cam-shell">
-        <img id="cam-img" class="cam-img" alt="Live MJPEG camera stream" />
-        <div class="cam-empty" id="cam-empty">NO CAMERA STREAM URL YET</div>
-      </div>
-      <div class="cam-meta">
-        <div class="cam-kv"><span>FPS</span><strong id="cam-fps">--</strong></div>
-        <div class="cam-kv"><span>DETECTIONS</span><strong id="cam-detections">--</strong></div>
-        <div class="cam-kv"><span>STREAM URL</span><strong id="cam-url">--</strong></div>
-      </div>
-      <button class="cam-open-btn" id="cam-open-btn" onclick="openStreamExternal()" disabled>OPEN STREAM EXTERNALLY</button>
     </div>
 
-    <!-- 3 main buttons -->
+    <!-- 5 main buttons -->
     <div class="main-btns">
       <div class="mbtn bt-btn" onclick="goPage('pg-ps4')">
         <div class="cr tl"></div><div class="cr br"></div>
@@ -320,8 +351,8 @@
             <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
           </svg>
         </div>
-        <div class="mbtn-lbl">ROS CONTROLS</div>
-        <div class="mbtn-desc">Gamepad live cmd_vel</div>
+        <div class="mbtn-lbl">REMOTE DRIVE</div>
+        <div class="mbtn-desc">Gamepad drive commands</div>
       </div>
       <div class="mbtn tmp-btn" onclick="goPage('pg-temp')">
         <div class="cr tl"></div><div class="cr br"></div>
@@ -330,8 +361,8 @@
             <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
           </svg>
         </div>
-        <div class="mbtn-lbl">ROS2 TELEMETRY</div>
-        <div class="mbtn-desc">Sensors, IMU, joystick, camera</div>
+        <div class="mbtn-lbl">ROBOT STATUS</div>
+        <div class="mbtn-desc">Sensors, motion and camera info</div>
       </div>
       <div class="mbtn mtr-btn" onclick="goPage('pg-motor')">
         <div class="cr tl"></div><div class="cr br"></div>
@@ -344,14 +375,62 @@
         <div class="mbtn-lbl">MOTOR CTRL</div>
         <div class="mbtn-desc">12 servo motors</div>
       </div>
+      <div class="mbtn imu-btn" onclick="goPage('pg-imu')">
+        <div class="cr tl"></div><div class="cr br"></div>
+        <div class="mbtn-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#39d6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7h18M3 12h18M3 17h18"/>
+            <path d="M7 3v18M12 3v18M17 3v18"/>
+          </svg>
+        </div>
+        <div class="mbtn-lbl">MOTION SENSORS</div>
+        <div class="mbtn-desc">Live orientation estimate</div>
+      </div>
+      <div class="mbtn cam-btn" onclick="goPage('pg-camera')">
+        <div class="cr tl"></div><div class="cr br"></div>
+        <div class="mbtn-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00e8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="6" width="16" height="12" rx="2" ry="2"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <div class="mbtn-lbl">CAMERA</div>
+        <div class="mbtn-desc">Open live camera view</div>
+      </div>
     </div>
   </div>
 
   <div class="fticker">
-    <span>ROS BRIDGE &nbsp;<span class="tv" id="f-ros">IDLE</span></span>
-    <span>STM32 UART &nbsp;<span class="tv" id="f-stm">--</span></span>
+    <span>CONNECTION &nbsp;<span class="tv" id="f-ros">IDLE</span></span>
+    <span>SYSTEM BUS &nbsp;<span class="tv" id="f-stm">--</span></span>
     <span>GAMEPAD API &nbsp;<span class="tv" id="f-gp">WAITING</span></span>
     <span>MOTORS &nbsp;<span class="tv">12/12</span></span>
+  </div>
+</div>
+
+<!-- ══════════════════ CAMERA PAGE ══════════════════ -->
+<div class="page" id="pg-camera">
+  <header class="hdr">
+    <div class="logo"><button class="back" onclick="goPage('pg-main')">← BACK</button></div>
+    <div class="hdr-r">
+      <div class="badge" id="ros-badge-cam"><div class="bdot" id="ros-dot-cam" style="background:var(--dim);box-shadow:none;"></div><span id="ros-lbl-cam">NOT CONNECTED</span></div>
+      <div class="bat-wrap"><div class="bat-body"><div class="bat-fill" id="bat-fill-cam" style="width:0%"></div></div><div class="bat-pct" id="bat-pct-cam">--%</div></div>
+    </div>
+  </header>
+  <div class="scroll">
+    <div class="ptrow"><div class="pt grn">CAMERA VIEW</div><div class="psub">Live camera stream from the robot.</div></div>
+    <div class="cam-shell">
+      <img id="cam-img" class="cam-img" alt="Live MJPEG camera stream" />
+      <div class="cam-empty" id="cam-empty">NO CAMERA FEED AVAILABLE</div>
+    </div>
+    <div class="cam-meta">
+      <div class="cam-kv"><span>FPS</span><strong id="cam-fps">--</strong></div>
+      <div class="cam-kv"><span>DETECTIONS</span><strong id="cam-detections">--</strong></div>
+    </div>
+  </div>
+  <div class="fticker">
+    <span>CAMERA &nbsp;<span class="tv">LIVE</span></span>
+    <span>STATUS &nbsp;<span class="tv" id="cam-summary">WAITING FOR ROBOT STATUS</span></span>
   </div>
 </div>
 
@@ -404,8 +483,66 @@
   </div>
   <div class="fticker">
     <span>WEB GAMEPAD API &nbsp;<span class="tv">ACTIVE</span></span>
-    <span>ROS CMD_VEL &nbsp;<span class="tv">/robodog/interface/cmd_vel</span></span>
+    <span>DRIVE COMMAND &nbsp;<span class="tv">/robodog/interface/cmd_vel</span></span>
     <span>DEAD ZONE &nbsp;<span class="tv">±0.08</span></span>
+  </div>
+</div>
+
+<!-- ══════════════════ MPU9250/6500 PAGE ══════════════════ -->
+<div class="page" id="pg-imu">
+  <header class="hdr">
+    <div class="logo"><button class="back" onclick="goPage('pg-main')">← BACK</button></div>
+    <div class="hdr-r">
+      <div class="badge" id="ros-badge-5"><div class="bdot" id="ros-dot-5" style="background:var(--dim);box-shadow:none;"></div><span id="ros-lbl-5">NOT CONNECTED</span></div>
+      <div class="bat-wrap"><div class="bat-body"><div class="bat-fill" id="bat-fill-5" style="width:0%"></div></div><div class="bat-pct" id="bat-pct-5">--%</div></div>
+    </div>
+  </header>
+  <div class="scroll">
+    <div class="ptrow"><div class="pt cyan">MPU9250/6500 ORIENTATION VIEW</div><div class="psub">SOURCE: TF map_to_imu.rotation (QUATERNION)</div></div>
+    <div class="imu-wrap">
+      <div class="imu-panel">
+        <div class="imu-h">
+          <div class="t">BODY ORIENTATION</div>
+          <div class="s" id="imu-quality">CALCULATING MPU FUSED ESTIMATE</div>
+        </div>
+        <div class="imu-stage">
+          <div class="imu-grid"></div>
+          <div class="imu-axis">
+            <i class="x"></i>
+            <i class="y"></i>
+            <i class="z"></i>
+          </div>
+          <div class="imu-axis-lbl x">+X</div>
+          <div class="imu-axis-lbl y">+Y</div>
+          <div class="imu-axis-lbl z">+Z</div>
+          <div class="imu-cube-wrap" id="imu-cube-wrap">
+            <div class="imu-cube" id="imu-cube">
+              <div class="imu-face front">TOP</div>
+              <div class="imu-face back">BASE</div>
+              <div class="imu-face left">L</div>
+              <div class="imu-face right">R</div>
+              <div class="imu-face top">FWD</div>
+              <div class="imu-face bottom">AFT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="imu-side">
+        <div class="imu-read">
+          <h4>ORIENTATION</h4>
+          <div class="imu-orient" id="imu-orient">ROLL 0.0° · PITCH 0.0° · YAW 0.0°</div>
+        </div>
+        <div class="imu-read">
+          <h4>TF FRAME</h4>
+          <div class="imu-vec" id="imu-frame">-- -> --</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="fticker">
+    <span>SOURCE &nbsp;<span class="tv">/robodog/interface/status_json</span></span>
+    <span>MODE &nbsp;<span class="tv">TF map_to_imu QUATERNION ONLY</span></span>
+    <span>RENDER &nbsp;<span class="tv">LIVE 3D BODY</span></span>
   </div>
 </div>
 
@@ -419,11 +556,11 @@
     </div>
   </header>
   <div class="scroll">
-    <div class="ptrow"><div class="pt">ROS2 TELEMETRY</div><div class="psub">LIVE FROM RPi5 VIA ROSBRIDGE /robodog/interface/status_json</div></div>
+    <div class="ptrow"><div class="pt">ROBOT STATUS</div><div class="psub">LIVE FROM ROBOT /robodog/interface/status_json</div></div>
     <div class="tgrid" id="tgrid"></div>
   </div>
   <div class="fticker">
-    <span>SOURCE &nbsp;<span class="tv">rosbridge WebSocket</span></span>
+    <span>SOURCE &nbsp;<span class="tv">Robot connection</span></span>
     <span>TOPIC &nbsp;<span class="tv">/robodog/interface/status_json</span></span>
     <span>STREAM &nbsp;<span class="tv">MJPEG IMG</span></span>
   </div>
@@ -444,7 +581,7 @@
     <button class="reset-btn" onclick="resetMotors()">↺ &nbsp;RESET ALL TO 0°</button>
   </div>
   <div class="fticker">
-    <span>PRIMARY CONTROL &nbsp;<span class="tv">ROS cmd_vel</span></span>
+    <span>PRIMARY CONTROL &nbsp;<span class="tv">DRIVE COMMAND</span></span>
     <span>RANGE &nbsp;<span class="tv">−90° TO +90°</span></span>
     <span>ACTIVE &nbsp;<span class="tv">12/12</span></span>
   </div>
@@ -454,12 +591,20 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-  ROS BRIDGE CONFIG
+  ROBODOG CONNECTION CONFIG
 ═══════════════════════════════════════════════════════════ */
-const DEFAULT_RPI_IP = '127.0.0.1';
+const DEFAULT_ROBODOG_HOST = 'robodog';
 const ROSBRIDGE_PORT = 9090;
-const DEFAULT_CAMERA_STREAM_PATH = '/stream?topic=/robodog/camera/detections/image&type=mjpeg';
-const DEFAULT_CAMERA_STREAM_URL = `http://localhost:8080${DEFAULT_CAMERA_STREAM_PATH}`;
+const ROSBRIDGE_HOST = DEFAULT_ROBODOG_HOST;
+const DEFAULT_CAMERA_STREAM_HOST = 'robodog';
+const DEFAULT_CAMERA_STREAM_PATH = '/stream?topic=/robodog/camera/detections/image';
+const DEFAULT_CAMERA_STREAM_URL = `http://${DEFAULT_CAMERA_STREAM_HOST}:8080${DEFAULT_CAMERA_STREAM_PATH}`;
+const ADDITIONAL_CAMERA_STREAM_PATHS = [
+  '/stream?topic=/robodog/camera/detections/image&type=mjpeg',
+  '/camera?mjpeg',
+  '/stream?topic=/camera/image_raw&type=mjpeg',
+  '/stream?topic=/camera/image&type=mjpeg',
+];
 const STATUS_TOPIC = '/robodog/interface/status_json';
 const STATUS_TOPIC_TYPE = 'std_msgs/msg/String';
 const CMD_VEL_TOPIC = '/robodog/interface/cmd_vel';
@@ -498,7 +643,8 @@ function createBrowserSpotApiFallback() {
     },
     connectRos: (url) => {
       closeSocket();
-      lastUrl = String(url || '').trim();
+      const targetUrl = String(url || '').trim() || `ws://${ROSBRIDGE_HOST}:${ROSBRIDGE_PORT}`;
+      lastUrl = targetUrl;
       emit('ros-connection-state', {
         state: 'connecting',
         url: lastUrl,
@@ -541,7 +687,7 @@ function createBrowserSpotApiFallback() {
         emit('ros-connection-state', {
           state: 'disconnected',
           url: lastUrl,
-          message: 'rosbridge connection closed',
+          message: 'Robot connection closed',
         });
         ws = null;
       };
@@ -584,12 +730,31 @@ let ros2State = {
     mag: { x: null, y: null, z: null },
     temp_c: null,
   },
+  mpu_tf: {
+    roll_deg: null,
+    pitch_deg: null,
+    yaw_deg: null,
+    tx: null,
+    ty: null,
+    tz: null,
+    source: '--',
+    frame_id: '',
+    child_frame_id: '',
+    stamp_sec: null,
+    stamp_nanosec: null,
+  },
   robot: { mode: '--', move: '--' },
   camera: { fps: null, detections: '--', stream_url: '' },
-  system: { stm32_state: '', motors_enabled: null, battery_pct: null, uptime_s: null },
+  system: { stm32_state: '', motors_enabled: null, battery_pct: null },
   legacy: { rpi: null, stm: null, battery: null, motor_l: null, motor_r: null, reg1: null, reg2: null, ambient: null },
 };
 let activeCameraUrl = '';
+const imuViz = {
+  roll: 0,
+  pitch: 0,
+  yaw: 0,
+  lastTs: performance.now(),
+};
 
 /* ── Page nav ── */
 function goPage(id) {
@@ -606,9 +771,9 @@ function toast(msg, type = '') {
   t._t = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-/* ── Connection badge helper (syncs all 4 pages) ── */
+/* ── Connection badge helper (syncs all pages) ── */
 function setRosBadges(state, label) {
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 5; i++) {
     const sfx = i === 1 ? '' : '-' + i;
     const badge = document.getElementById('ros-badge' + sfx);
     const dot   = document.getElementById('ros-dot'   + sfx);
@@ -630,15 +795,37 @@ function setRosBadges(state, label) {
     state === 'connected' ? 'CONNECTED' : state === 'connecting' ? 'CONNECTING...' : 'IDLE';
 }
 
-function setBattery(pct) {
+function setRobotBattery(pct) {
   const color = pct > 40 ? 'var(--green)' : pct > 20 ? 'var(--amber)' : 'var(--red)';
-  ['','2','3','4'].forEach(sfx => {
+  ['2','3','4','5','cam'].forEach(sfx => {
     const f = document.getElementById('bat-fill' + (sfx ? '-'+sfx : ''));
     const p = document.getElementById('bat-pct'  + (sfx ? '-'+sfx : ''));
     if (f) f.style.width = pct + '%';
     if (p) { p.textContent = pct + '%'; p.style.color = color; }
   });
-  document.getElementById('s-bat').textContent = pct + '%';
+}
+
+function setPcBattery(pct) {
+  const color = pct > 40 ? 'var(--green)' : pct > 20 ? 'var(--amber)' : 'var(--red)';
+  const fill = document.getElementById('pc-bat-fill');
+  const pctEl = document.getElementById('pc-bat-pct');
+  const statusBat = document.getElementById('s-bat');
+  if (fill) fill.style.width = pct + '%';
+  if (pctEl) { pctEl.textContent = pct + '%'; pctEl.style.color = color; }
+  if (statusBat) statusBat.textContent = pct + '%';
+}
+
+async function initPcBattery() {
+  const batteryApi = navigator.getBattery?.() || Promise.resolve(navigator.battery || navigator.mozBattery || navigator.webkitBattery);
+  if (!batteryApi) return;
+  try {
+    const battery = await batteryApi;
+    if (!battery) return;
+    const update = () => setPcBattery(Math.round((battery.level ?? 0) * 100));
+    battery.addEventListener('levelchange', update);
+    battery.addEventListener('chargingchange', update);
+    update();
+  } catch (_) {}
 }
 
 function isFiniteNumber(value) {
@@ -713,20 +900,63 @@ function fmtJoyRaw(raw) {
   return `axes[${axes.length}] ${axisPreview || '--'} | buttons[${buttons.length}] active ${pressedCount}`;
 }
 
-function fmtUptime(seconds) {
-  if (seconds === null || seconds === undefined || seconds === '') return '--';
-  const total = Number(seconds);
-  if (!Number.isFinite(total)) return String(seconds);
-  const hours = String(Math.floor(total / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
-  const secs = String(Math.floor(total % 60)).padStart(2, '0');
-  return `${hours}:${minutes}:${secs}`;
-}
-
 function fmtStreamUrl(url) {
+
   if (!url) return '--';
   const text = String(url);
   return text.length > 52 ? text.slice(0, 49) + '...' : text;
+}
+
+function formatClimateMarkup(value, unit, digits = 1) {
+  if (value === null || value === undefined || value === '') {
+    return '<span class="value-num">--</span><span class="value-unit">' + unit + '</span>';
+  }
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return '<span class="value-num">--</span><span class="value-unit">' + unit + '</span>';
+  }
+  return '<span class="value-num">' + number.toFixed(digits) + '</span><span class="value-unit">' + unit + '</span>';
+}
+
+function setClimateValue(id, value, unit, digits = 1) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = formatClimateMarkup(value, unit, digits);
+}
+
+function toDegrees(v) {
+  return (Number(v) * 180) / Math.PI;
+}
+
+function clampAngleDeg(value) {
+  let angle = Number(value);
+  if (!Number.isFinite(angle)) return null;
+  while (angle > 180) angle -= 360;
+  while (angle < -180) angle += 360;
+  return angle;
+}
+
+function quaternionToEulerDeg(x, y, z, w) {
+  const sinrCosp = 2 * (w * x + y * z);
+  const cosrCosp = 1 - 2 * (x * x + y * y);
+  const roll = Math.atan2(sinrCosp, cosrCosp);
+
+  const sinp = 2 * (w * y - z * x);
+  const pitch = Math.abs(sinp) >= 1 ? Math.sign(sinp) * (Math.PI / 2) : Math.asin(sinp);
+
+  const sinyCosp = 2 * (w * z + x * y);
+  const cosyCosp = 1 - 2 * (y * y + z * z);
+  const yaw = Math.atan2(sinyCosp, cosyCosp);
+
+  return {
+    roll_deg: clampAngleDeg(toDegrees(roll)),
+    pitch_deg: clampAngleDeg(toDegrees(pitch)),
+    yaw_deg: clampAngleDeg(toDegrees(yaw)),
+  };
+}
+
+function lowPass(prev, next, alpha) {
+  return prev + (next - prev) * alpha;
 }
 
 function patchRos2State(patch) {
@@ -740,6 +970,73 @@ function toNumberOr(value, fallback = null) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function extractMpuTf(payload) {
+  const tfMapToImu = payload?.tf?.map_to_imu;
+  if (!tfMapToImu || typeof tfMapToImu !== 'object') return null;
+  if (tfMapToImu.available !== true) return null;
+
+  const rot = tfMapToImu.rotation || {};
+  const qx = toNumberOr(rot?.x, null);
+  const qy = toNumberOr(rot?.y, null);
+  const qz = toNumberOr(rot?.z, null);
+  const qw = toNumberOr(rot?.w, null);
+  if (!isFiniteNumber(qx) || !isFiniteNumber(qy) || !isFiniteNumber(qz) || !isFiniteNumber(qw)) return null;
+
+  const e = quaternionToEulerDeg(qx, qy, qz, qw);
+  const tr = tfMapToImu.translation || {};
+  return {
+    roll_deg: e.roll_deg,
+    pitch_deg: e.pitch_deg,
+    yaw_deg: e.yaw_deg,
+    tx: toNumberOr(tr.x, 0),
+    ty: toNumberOr(tr.y, 0),
+    tz: toNumberOr(tr.z, 0),
+    source: 'TF map_to_imu.rotation',
+    frame_id: tfMapToImu.parent_frame || 'map',
+    child_frame_id: tfMapToImu.child_frame || 'imu_link',
+    stamp_sec: toNumberOr(tfMapToImu?.stamp?.sec, null),
+    stamp_nanosec: toNumberOr(tfMapToImu?.stamp?.nanosec, null),
+  };
+}
+
+function updateImuVisualization(state) {
+  const mpuTf = state?.mpu_tf || {};
+
+  const tfReady = isFiniteNumber(mpuTf.roll_deg) && isFiniteNumber(mpuTf.pitch_deg) && isFiniteNumber(mpuTf.yaw_deg);
+
+  const frameFrom = mpuTf.frame_id || '--';
+  const frameTo = mpuTf.child_frame_id || '--';
+  setText('imu-frame', `${frameFrom} -> ${frameTo}`);
+
+  if (tfReady) {
+    imuViz.roll = lowPass(imuViz.roll, mpuTf.roll_deg, 0.25);
+    imuViz.pitch = lowPass(imuViz.pitch, mpuTf.pitch_deg, 0.25);
+    imuViz.yaw = lowPass(imuViz.yaw, mpuTf.yaw_deg, 0.25);
+  }
+
+  const cube = document.getElementById('imu-cube');
+  if (cube) {
+    cube.style.transform =
+      `rotateZ(${imuViz.yaw.toFixed(2)}deg) rotateY(${imuViz.pitch.toFixed(2)}deg) rotateX(${imuViz.roll.toFixed(2)}deg)`;
+  }
+
+  setText('imu-orient', `ROLL ${imuViz.roll.toFixed(1)}° · PITCH ${imuViz.pitch.toFixed(1)}° · YAW ${imuViz.yaw.toFixed(1)}°`);
+
+  const quality = document.getElementById('imu-quality');
+  if (quality) {
+    if (tfReady) {
+      const tfSource = mpuTf.source || 'TF ORIENTATION';
+      const frameNote = mpuTf.child_frame_id || mpuTf.frame_id || '';
+      const stampSec = toNumberOr(mpuTf.stamp_sec, null);
+      quality.textContent = frameNote
+        ? `${tfSource} · ${frameNote}${stampSec !== null ? ` · t=${Math.floor(stampSec)}` : ''}`
+        : tfSource;
+    } else {
+      quality.textContent = 'WAITING FOR tf.map_to_imu.rotation';
+    }
+  }
+}
+
 function normalizeRos2Payload(data) {
   if (!data || typeof data !== 'object') return {};
 
@@ -750,14 +1047,13 @@ function normalizeRos2Payload(data) {
 
   if (system.stm32_state === undefined && payload.stm !== undefined) system.stm32_state = payload.stm;
   if (system.battery_pct === undefined && payload.battery !== undefined) system.battery_pct = payload.battery;
-  if (system.uptime_s === undefined && payload.uptime !== undefined) system.uptime_s = payload.uptime;
 
   const rawCameraUrl =
     camera.stream_url ||
     payload.stream_url ||
     payload.streamUrl ||
     camera.url ||
-    buildCameraStreamUrl(getRosIpFromInput()) ||
+    buildCameraStreamUrl(DEFAULT_ROBODOG_HOST) ||
     DEFAULT_CAMERA_STREAM_URL;
   camera.stream_url = rewriteLoopbackCameraUrl(rawCameraUrl);
   if (Array.isArray(camera.detections)) {
@@ -765,11 +1061,25 @@ function normalizeRos2Payload(data) {
   }
 
   system.battery_pct = toNumberOr(system.battery_pct, ros2State.system.battery_pct);
-  system.uptime_s = toNumberOr(system.uptime_s, ros2State.system.uptime_s);
   camera.fps = toNumberOr(camera.fps, ros2State.camera.fps);
+
+  const mpuTf = extractMpuTf(payload);
 
   payload.system = system;
   payload.camera = camera;
+  payload.mpu_tf = mpuTf || {
+    roll_deg: null,
+    pitch_deg: null,
+    yaw_deg: null,
+    tx: null,
+    ty: null,
+    tz: null,
+    source: '--',
+    frame_id: '',
+    child_frame_id: '',
+    stamp_sec: null,
+    stamp_nanosec: null,
+  };
   payload.robot = {
     mode: robot.mode || ros2State.robot.mode,
     move: robot.move || ros2State.robot.move,
@@ -790,12 +1100,12 @@ function setHTML(id, value) {
 
 function sanitizeIpInput(value) {
   const raw = String(value || '').trim();
-  if (!raw) return DEFAULT_RPI_IP;
+  if (!raw) return DEFAULT_ROBODOG_HOST;
 
-  // Accept accidental full ws URL and normalize to host/IP only.
+  // Accept accidental full ws URL and normalize to host only.
   let host = raw.replace(/^wss?:\/\//i, '').split('/')[0];
   if (host.includes(':')) host = host.split(':')[0];
-  return host || DEFAULT_RPI_IP;
+  return host || DEFAULT_ROBODOG_HOST;
 }
 
 function isLoopbackHost(host) {
@@ -803,9 +1113,8 @@ function isLoopbackHost(host) {
   return normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1' || normalized === '[::1]';
 }
 
-function buildCameraStreamUrl(host) {
-  const safeHost = sanitizeIpInput(host || DEFAULT_RPI_IP);
-  return `http://${safeHost}:8080${DEFAULT_CAMERA_STREAM_PATH}`;
+function buildCameraStreamUrl() {
+  return `http://${DEFAULT_CAMERA_STREAM_HOST}:8080${DEFAULT_CAMERA_STREAM_PATH}`;
 }
 
 function rewriteLoopbackCameraUrl(url) {
@@ -813,38 +1122,34 @@ function rewriteLoopbackCameraUrl(url) {
   if (!raw) return '';
   try {
     const parsed = new URL(raw);
-    if (!isLoopbackHost(parsed.hostname)) return parsed.toString();
-
-    const rosHost = getRosIpFromInput();
-    if (!rosHost || isLoopbackHost(rosHost)) return parsed.toString();
-
-    parsed.hostname = rosHost;
     return parsed.toString();
   } catch (_) {
     return raw;
   }
 }
 
-function rosUrlFromIp(ip) {
-  return `ws://${ip}:${ROSBRIDGE_PORT}`;
+function buildCameraFallbackUrls() {
+  return ADDITIONAL_CAMERA_STREAM_PATHS.map((path) => `http://${DEFAULT_CAMERA_STREAM_HOST}:8080${path}`);
 }
 
-function getRosIpFromInput() {
-  const el = document.getElementById('ros-ip');
-  return sanitizeIpInput(el?.value || '');
-}
-
-function getRosUrlFromInput() {
-  return rosUrlFromIp(getRosIpFromInput());
-}
-
-function parseRosIpFromUrl(url) {
-  try {
-    const parsed = new URL(String(url || ''));
-    return parsed.hostname || DEFAULT_RPI_IP;
-  } catch (_) {
-    return sanitizeIpInput(url);
+function tryLoadCameraUrls(imgEl, emptyEl, urls, index = 0) {
+  if (!imgEl || !emptyEl || index >= urls.length) {
+    if (imgEl) imgEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'flex';
+    return;
   }
+
+  imgEl.onload = () => {
+    imgEl.style.display = 'block';
+    emptyEl.style.display = 'none';
+  };
+  imgEl.onerror = () => {
+    tryLoadCameraUrls(imgEl, emptyEl, urls, index + 1);
+  };
+
+  imgEl.style.display = 'none';
+  emptyEl.style.display = 'flex';
+  imgEl.src = urls[index];
 }
 
 function renderRos2Telemetry() {
@@ -854,19 +1159,10 @@ function renderRos2Telemetry() {
     activeCameraUrl = cameraUrl;
     const camImg = document.getElementById('cam-img');
     const camEmpty = document.getElementById('cam-empty');
-    const camBtn = document.getElementById('cam-open-btn');
-    if (camImg && camEmpty && camBtn) {
-      if (cameraUrl) {
-        camImg.src = cameraUrl;
-        camImg.style.display = 'block';
-        camEmpty.style.display = 'none';
-        camBtn.disabled = false;
-      } else {
-        camImg.removeAttribute('src');
-        camImg.style.display = 'none';
-        camEmpty.style.display = 'flex';
-        camBtn.disabled = true;
-      }
+    if (camImg && camEmpty) {
+      const candidateUrls = [cameraUrl, ...buildCameraFallbackUrls()]
+        .filter(Boolean);
+      tryLoadCameraUrls(camImg, camEmpty, candidateUrls);
     }
   }
 
@@ -875,21 +1171,19 @@ function renderRos2Telemetry() {
     : isFiniteNumber(state.legacy?.battery)
       ? Number(state.legacy.battery)
       : null;
-  if (battery !== null) setBattery(Math.round(battery));
+  if (battery !== null) setRobotBattery(Math.round(battery));
 
   const stmState = state.system?.stm32_state || state.legacy?.stm || '--';
   setText('s-stm', stmState || '--');
   setText('f-stm', stmState || '--');
-  setText('s-uptime', fmtUptime(state.system?.uptime_s));
   setText('cam-fps', valueOrDash(state.camera?.fps, 1));
   setText('cam-detections', state.camera?.detections ? String(state.camera.detections) : '--');
-  setText('cam-url', fmtStreamUrl(cameraUrl));
   setText('ros2-main-summary', `MODE ${state.robot?.mode || '--'} · MOVE ${state.robot?.move || '--'} · BAT ${battery !== null ? `${Math.round(battery)}%` : '--'}`);
 
   const summary = [
     `CMD ${fmtJoyCmd(state.joy_cmd)}`,
     `RAW ${fmtJoyRaw(state.joy_raw)}`,
-    `IMU ${fmtTemp(state.imu?.temp_c)}`,
+    `MPU TF ${state.mpu_tf?.source || '--'}`,
   ].join('  //  ');
   setText('ros2-main-summary', `MODE ${state.robot?.mode || '--'} · MOVE ${state.robot?.move || '--'} · BAT ${battery !== null ? `${Math.round(battery)}%` : '--'}`);
   const summaryEl = document.getElementById('ros2-main-summary');
@@ -897,25 +1191,18 @@ function renderRos2Telemetry() {
 
   const renderers = [
     ['tv0', fmtTemp(state.sensors?.temp1_c), 'tb0', state.sensors?.temp1_c],
-    ['tv1', fmtPercent(state.sensors?.hum1_pct), 'tb1', state.sensors?.hum1_pct],
+    ['tv1', fmtPercent(state.sensors?.hum1_pct), 'tb1', state.sensors?.hum2_pct],
     ['tv2', fmtTemp(state.sensors?.temp2_c), 'tb2', state.sensors?.temp2_c],
     ['tv3', fmtPercent(state.sensors?.hum2_pct), 'tb3', state.sensors?.hum2_pct],
     ['tv4', fmtDistance(state.sensors?.ultrasonic1_cm), 'tb4', state.sensors?.ultrasonic1_cm],
     ['tv5', fmtDistance(state.sensors?.ultrasonic2_cm), 'tb5', state.sensors?.ultrasonic2_cm],
-    ['tv6', fmtTemp(state.imu?.temp_c), 'tb6', state.imu?.temp_c],
-    ['tv7', fmtVec(state.imu?.accel), 'tb7', null],
-    ['tv8', fmtVec(state.imu?.gyro), 'tb8', null],
-    ['tv9', fmtVec(state.imu?.mag), 'tb9', null],
-    ['tv10', fmtJoyCmd(state.joy_cmd), 'tb10', null],
-    ['tv11', fmtJoyRaw(state.joy_raw), 'tb11', null],
-    ['tv12', String(state.robot?.mode || '--'), 'tb12', null],
-    ['tv13', String(state.robot?.move || '--'), 'tb13', null],
-    ['tv14', valueOrDash(state.camera?.fps, 1) + ' fps', 'tb14', state.camera?.fps],
-    ['tv15', String(state.camera?.detections || '--'), 'tb15', null],
-    ['tv16', String(state.system?.stm32_state || state.legacy?.stm || '--'), 'tb16', null],
-    ['tv17', battery !== null ? `${Math.round(battery)}%` : '--', 'tb17', battery],
-    ['tv18', fmtUptime(state.system?.uptime_s), 'tb18', state.system?.uptime_s],
-    ['tv19', fmtStreamUrl(cameraUrl), 'tb19', null],
+    ['tv6', fmtJoyCmd(state.joy_cmd), 'tb6', null],
+    ['tv7', fmtJoyRaw(state.joy_raw), 'tb7', null],
+    ['tv8', String(state.robot?.mode || '--'), 'tb8', null],
+    ['tv9', valueOrDash(state.camera?.fps, 1) + ' fps', 'tb9', state.camera?.fps],
+    ['tv10', String(state.camera?.detections || '--'), 'tb10', null],
+    ['tv11', String(state.system?.stm32_state || state.legacy?.stm || '--'), 'tb11', null],
+    ['tv12', battery !== null ? `${Math.round(battery)}%` : '--', 'tb12', battery],
   ];
 
   renderers.forEach(([valueId, text, barId, metric]) => {
@@ -930,37 +1217,40 @@ function renderRos2Telemetry() {
       }
     }
   });
+
+  setClimateValue('tv0', state.sensors?.temp1_c, 'deg C', 1);
+  setClimateValue('tv1', state.sensors?.hum1_pct, '%RH', 1);
+  setClimateValue('tv2', state.sensors?.temp2_c, 'deg C', 1);
+  setClimateValue('tv3', state.sensors?.hum2_pct, '%RH', 1);
+
+  updateImuVisualization(state);
 }
 
 function initTelemetryBridge() {
   spotAPI.on('ros-connection-state', (data) => {
     const state = data?.state || 'disconnected';
     const label = state === 'connected'
-      ? 'ROS CONNECTED'
+      ? 'ROBOT CONNECTED'
       : state === 'connecting'
-        ? 'ROS CONNECTING...'
+        ? 'ROBOT CONNECTING...'
         : state === 'error'
-          ? 'ROS ERROR'
+          ? 'CONNECTION ERROR'
           : 'NOT CONNECTED';
     rosConnected = state === 'connected';
     setRosBadges(state, label);
     if (state === 'connected') {
-      setText('s-device', 'ROSBRIDGE');
-      setText('s-rssi', data?.url || getRosUrlFromInput());
+      setText('s-device', 'ROBODOG');
+      setText('s-rssi', '-- dBm');
       document.getElementById('btn-connect').style.display = 'none';
       document.getElementById('btn-disconnect').style.display = 'flex';
       document.getElementById('ros-stats').style.opacity = '1';
       document.getElementById('ros-warn').style.display = 'none';
-      if (data?.url) {
-        const ipInput = document.getElementById('ros-ip');
-        if (ipInput) ipInput.value = parseRosIpFromUrl(data.url);
-      }
-      toast('ROS bridge connected');
+      toast('Robot connected');
     } else if (state === 'disconnected') {
       onRosDisconnect();
     } else if (state === 'error') {
       document.getElementById('ros-warn').style.display = 'block';
-      toast(data?.message || 'ROS connection error', 'err');
+      toast(data?.message || 'Robot connection error', 'err');
     }
   });
 
@@ -969,22 +1259,15 @@ function initTelemetryBridge() {
   });
 }
 
-function openStreamExternal() {
-  const url = ros2State.camera?.stream_url || '';
-  if (!url) return;
-  try { window.open(url, '_blank', 'noopener,noreferrer'); } catch (_) {}
-}
-
 initTelemetryBridge();
-
+  initPcBattery();
 /* ═══════════════════════════════════════════════════════════
    ROS CONNECT / DISCONNECT
 ═══════════════════════════════════════════════════════════ */
 async function rosConnect() {
-  const url = getRosUrlFromInput();
-  setRosBadges('connecting', 'ROS CONNECTING...');
-  toast(`Connecting to ${url}`);
-  spotAPI.connectRos(url);
+  setRosBadges('connecting', 'ROBOT CONNECTING...');
+  toast('Connecting to robot');
+  spotAPI.connectRos();
 }
 
 async function rosDisconnect() {
@@ -998,9 +1281,8 @@ function onRosDisconnect() {
   document.getElementById('ros-stats').style.opacity = '.4';
   setRosBadges('disconnected', 'DISCONNECTED');
   setText('s-device', '--');
-  setText('s-rssi', '--');
-  setText('s-bat', '--%');
-  ['','2','3','4'].forEach(sfx => {
+  setText('s-rssi', '-- dBm');
+  ['2','3','4','5','cam'].forEach(sfx => {
     const fill = document.getElementById('bat-fill' + (sfx ? '-'+sfx : ''));
     const pct = document.getElementById('bat-pct' + (sfx ? '-'+sfx : ''));
     if (fill) fill.style.width = '0%';
@@ -1010,10 +1292,10 @@ function onRosDisconnect() {
   patchRos2State({
     camera: { stream_url: '', fps: null, detections: '--' },
     robot: { mode: '--', move: '--' },
-    system: { stm32_state: '', battery_pct: null, uptime_s: null },
+    system: { stm32_state: '', battery_pct: null },
     legacy: { stm: null, battery: null },
   });
-  toast('ROS bridge disconnected', 'warn');
+  toast('Robot disconnected', 'warn');
 }
 
 /* ── Optional manual motor UI (not used in ROS data path) ── */
@@ -1093,7 +1375,7 @@ function pollGamepad() {
   };
   updatePS4(ps4);
 
-  // Publish cmd_vel through rosbridge at a sane rate.
+  // Publish cmd_vel through robot link at a sane rate.
   if (spotAPI && rosConnected) {
     const now = Date.now();
     if (now - lastCmdVelPublishMs >= 80) {
@@ -1166,7 +1448,7 @@ mapData.forEach(([k,v]) => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-  TELEMETRY — updated from rosbridge JSON
+  STATUS — updated from robot JSON
 ═══════════════════════════════════════════════════════════ */
 const telemetryCards = [
   { title:'AHT10 #1 TEMPERATURE', icon:'🌡' },
@@ -1175,29 +1457,23 @@ const telemetryCards = [
   { title:'AHT10 #2 HUMIDITY', icon:'💧' },
   { title:'ULTRASONIC #1 DISTANCE', icon:'📡' },
   { title:'ULTRASONIC #2 DISTANCE', icon:'📡' },
-  { title:'IMU TEMPERATURE', icon:'🧭' },
-  { title:'IMU ACCEL X/Y/Z', icon:'⟂' },
-  { title:'IMU GYRO X/Y/Z', icon:'⟳' },
-  { title:'IMU MAG X/Y/Z', icon:'⌁' },
   { title:'JOYSTICK COMMAND', icon:'🎮' },
   { title:'JOYSTICK RAW', icon:'▣' },
   { title:'ROBOT MODE', icon:'🤖' },
-  { title:'ROBOT MOVE', icon:'↔' },
   { title:'CAMERA FPS', icon:'▶' },
   { title:'DETECTIONS', icon:'◌' },
   { title:'STM32 STATE', icon:'⚡' },
   { title:'BATTERY', icon:'🔋' },
-  { title:'UPTIME', icon:'⏱' },
-  { title:'STREAM URL', icon:'⛓' },
-];
+  ];
 const tg = document.getElementById('tgrid');
 telemetryCards.forEach((d,i) => {
   const c = document.createElement('div');
   c.className = `tc tok`; c.id = `tc${i}`;
+  if (i <= 3) c.classList.add('climate');
   c.innerHTML = `<div class="tc-lbl">${d.title}</div>
     <div class="tv-big" id="tv${i}">--</div>
     <div class="tbar"><div class="tbar-fill" id="tb${i}" style="width:0%"></div></div>
-    <div class="tstat" id="ts${i}">WAITING FOR ROS2 TELEMETRY</div>
+    <div class="tstat" id="ts${i}">WAITING FOR ROBOT STATUS</div>
     <div class="tico">${d.icon}</div>`;
   tg.appendChild(c);
 });
@@ -1264,10 +1540,7 @@ async function resetMotors() {
 }
 
 /* ── initial defaults ── */
-window.addEventListener('load', () => {
-  const ipInput = document.getElementById('ros-ip');
-  if (ipInput && !ipInput.value) ipInput.value = DEFAULT_RPI_IP;
-});
+
 </script>
 </body>
 </html>
