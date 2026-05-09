@@ -1,11 +1,313 @@
-\chapter{Mechanical and 3D Design}
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[section]{placeins}
+
+\begin{document}
+
+
+\section{Mechanical and 3D Design}
 
 \section{Design Requirements}
 
-\section{Materials Selection (PLA, etc.)}
+\subsection*{Functional Requirements}
 
-\section{Assembly Process (Screws and Fasteners)}
+The primary objective of this robot is to replicate the walking motion of a quadruped animal, specifically mimicking the natural gait of a dog. To achieve this, the following functional requirements were defined:
+
+\begin{itemize}
+    \item The robot must successfully reproduce a quadruped walking pattern, with coordinated leg movement that approximates biological locomotion.
+    \item It must maintain static and dynamic balance during both standing and walking phases.
+    \item The mechanical structure must be capable of supporting the combined weight of all components, including servo motors, battery pack, and the onboard controller.
+    \item The design must be lightweight to minimize the torque demand placed on each servo motor, extending their operational lifespan and improving energy efficiency.
+    \item All subsystems must be modularly assembled to allow for straightforward maintenance, part replacement, and iterative improvements.
+    \item Sufficient internal space must be allocated for electronics, including the microcontroller, power distribution system, and associated wiring.
+\end{itemize}
+
+\subsection*{Design Constraints}
+
+The design was also shaped by a set of practical constraints that influenced material and component choices throughout the project:
+
+\begin{itemize}
+    \item \textbf{Budget limitations} required the use of cost-effective components and manufacturing methods without compromising structural integrity.
+    \item \textbf{3D printed fabrication} was adopted as the primary manufacturing process, imposing constraints on wall thickness, part orientation, and achievable tolerances.
+    \item \textbf{Servo torque limitations} dictated the maximum allowable leg length and body weight, requiring careful mass distribution across the frame.
+\end{itemize}
+\section{Materials Selection}
+
+\subsection*{Material Properties}
+
+Two materials were evaluated and used across the different stages of this project: PLA for the initial prototype and ABS for the final production build. The selection process was based on research into the mechanical and printability properties of each material, allowing for an informed transition from prototyping to final assembly.
+
+\subsection*{PLA --- Prototyping Phase}
+
+PLA was chosen as the material for the prototype stage due to its accessibility and ease of use. It allowed for rapid iteration and quick validation of the robot's geometry, fit, and assembly logic before committing to a final material.
+
+\begin{itemize}
+    \item Readily available and cost-effective, making it ideal for early-stage development.
+    \item Easy to print with standard FDM printers without requiring an enclosure or advanced settings.
+    \item Good dimensional accuracy, ensuring parts fit together as designed during the prototyping phase.
+    \item Lightweight, which helped in evaluating weight distribution before finalizing the design.
+\end{itemize}
+
+However, PLA came with notable printing challenges during this phase. Several issues were encountered, including spaghettification mid-print, poor layer adhesion under certain configurations, and structural weakness resulting from incorrect slicer settings. These were resolved by adjusting the print speed, which significantly improved print quality and consistency.
+
+\subsection*{ABS --- Final Build}
+
+Once the design was validated through the PLA prototype, all parts were transitioned to ABS for the final build. This decision was driven by ABS's superior mechanical properties, which are better suited for a functional, load-bearing robot.
+
+\begin{itemize}
+    \item Higher impact resistance and toughness compared to PLA, essential for dynamic loading during walking.
+    \item Better heat resistance, reducing the risk of deformation near electronics or in warm environments.
+    \item Greater long-term durability, making it more appropriate for a functional final product.
+\end{itemize}
+
+Notably, the transition to ABS eliminated the printing issues encountered with PLA. No significant warping, spaghettification, or adhesion problems were observed during the ABS printing phase.
+
+\subsection*{Alternative Materials Considered}
+
+While not physically tested, the following materials were researched as potential candidates:
+
+\begin{itemize}
+    \item \textbf{PETG:} Offers a balance between PLA's ease of printing and ABS's mechanical strength, with improved flexibility and impact resistance.
+    \item \textbf{Nylon:} Highly durable and wear-resistant, but difficult to print and significantly more expensive.
+\end{itemize}
+
+These alternatives were ultimately set aside in favor of the PLA-to-ABS workflow, which provided the best trade-off between printability, cost, and final part performance at each stage of the project.
+
+\section{Assembly Process}
+
+\subsection*{Mechanical Assembly}
+
+The robot was assembled using a modular approach, where each subsystem --- legs, body, and electronics housing --- was built and tested independently before being integrated into the full structure. This modularity simplified both the assembly process and any subsequent adjustments or repairs.
+
+\subsection*{Screws and Fasteners Used}
+
+The fastening strategy was selected to balance structural reliability with the constraints of 3D printed parts:
+
+\begin{itemize}
+    \item \textbf{Hex socket M3 screws} were used throughout the majority of the build, providing strong and reliable joints between printed components. Their hex socket drive allowed for precise tightening in confined spaces within the structure.
+    \item \textbf{M5 screws} were used specifically for securing the body covers, where a larger fastener was needed to distribute load across the cover panels without stressing the printed material.
+    \item Parts were fastened either by screwing directly into the printed geometry where wall thickness permitted, or using a nut and bolt configuration for joints requiring higher pull-out resistance.
+\end{itemize}
+
+\subsection*{Servo Integration}
+
+Each servo motor was mounted within dedicated printed brackets integrated into the leg structure. Attachment to the joint was achieved using the servo horn screws supplied with the motors, ensuring a secure and play-free connection between the servo output shaft and the driven link. This approach also simplified replacement, as servos could be swapped out without modifying the surrounding structure.
+
+\subsection*{Leg and Body Connection}
+
+Leg segments were connected to each other and to the main body using a combination of snap-fit features and M3 screws. The snap-fit elements provided initial alignment and positioning during assembly, while the screws ensured a rigid and permanent connection under dynamic loading. Minor adjustments to part tolerances were made during the assembly phase to ensure proper fitment across all leg joints, but no reprinting or major redesign was required.
+
+\subsection*{Cable Management}
+
+All servo and electronics wiring was routed through internal channels designed directly into the printed body structure. This approach kept cables protected from mechanical interference, maintained a clean external profile, and reduced the risk of wires becoming entangled with moving leg components during operation.
 
 \section{Movement Mechanisms}
 
+\subsection*{Leg Structure}
+
+The robot employs a four-legged quadruped structure, with each leg consisting of three independently actuated joints. This configuration provides sufficient freedom of movement to replicate a naturalistic walking gait while keeping the mechanical and control complexity manageable within the scope of this project.
+
+\subsection*{Degrees of Freedom}
+
+Each leg has 3 degrees of freedom, with each joint serving a distinct role in the overall motion of the limb:
+
+\begin{itemize}
+    \item \textbf{Hip joint:} Responsible for forward and backward swing of the entire leg, driving the robot's forward locomotion.
+    \item \textbf{Shoulder joint:} Controls the lifting and lowering of the leg, allowing it to clear the ground during the swing phase of the gait.
+    \item \textbf{Knee joint:} Provides additional stability control by adjusting the lower leg angle, contributing to a more stable and balanced stance during weight-bearing phases.
+\end{itemize}
+
+With 3 degrees of freedom per leg across 4 legs, the robot operates a total of 12 servo motors, all working in coordination to produce smooth and stable movement.
+
+\subsection*{Joint Movement and Control}
+
+Joint movement is achieved through direct servo angle control, where each servo is commanded to a specific angular position corresponding to a desired leg configuration. This approach offers straightforward implementation and predictable motion, making it well suited for the current stage of development. Servo angles are calculated and sequenced to produce the intended limb trajectory for each phase of the gait cycle.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/1_robot_right_links.png}
+    \caption{Robot right-side link assembly.}
+    \label{fig:robot_right_links}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/2_right_straight_links.png}
+    \caption{Right-side links in the straight configuration.}
+    \label{fig:right_straight_links}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/3_right_link_angles_example.png}
+    \caption{Example of right-side link angles.}
+    \label{fig:right_link_angles_example}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/4_right_link2_config_step_1.png}
+    \caption{Right link 2 configuration, step 1.}
+    \label{fig:right_link2_config_step_1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/4_right_link2_config_step_2.png}
+    \caption{Right link 2 configuration, step 2.}
+    \label{fig:right_link2_config_step_2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/10_left_link3_config_step_1.png}
+    \caption{Left link 3 configuration, step 1.}
+    \label{fig:left_link3_config_step_1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/11_left_link3_config_step_2.png}
+    \caption{Left link 3 configuration, step 2.}
+    \label{fig:left_link3_config_step_2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/14_right_link1_config_step_1.png}
+    \caption{Right link 1 configuration, step 1.}
+    \label{fig:right_link1_config_step_1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/15_right_link1_config_step_2.png}
+    \caption{Right link 1 configuration, step 2.}
+    \label{fig:right_link1_config_step_2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/16_left_link1_config_step_1.png}
+    \caption{Left link 1 configuration, step 1.}
+    \label{fig:left_link1_config_step_1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/17_left_link1_config_step_2.png}
+    \caption{Left link 1 configuration, step 2.}
+    \label{fig:left_link1_config_step_2}
+\end{figure}
+
+\FloatBarrier
+
+\subsection*{Walking Gait}
+
+A tripod gait pattern was selected as the target locomotion strategy. In this gait, the robot alternates between two groups of legs, ensuring that at least three legs remain in contact with the ground at all times, which provides inherent static stability throughout the walking cycle. Weight distribution is centered within the body frame to maintain balance during leg transitions.
+
+\subsection*{Current Implementation Status}
+
+The walking motion has been partially implemented. Basic leg movement is currently functional, with individual legs responding correctly to servo angle commands and producing the intended joint trajectories. Full coordination of the tripod gait pattern across all four legs is ongoing, with the foundational motion control in place to support further development.
+
 \section{3D Model Overview}
+
+\subsection*{CAD Design}
+
+The robot was fully designed using SolidWorks, a professional-grade CAD platform that allowed for precise part modeling, assembly simulation, and interference checking prior to any physical fabrication. The design was developed with modularity in mind, enabling individual components to be printed, tested, and replaced independently without requiring changes to the overall assembly.
+
+Importantly, the design required no major revisions between the prototype and the final model. The initial CAD design proved structurally sound and dimensionally accurate, with the PLA prototype validating the geometry and fitment before the transition to the final ABS build.
+
+\subsection*{Body Structure}
+
+The main body serves as the central hub of the robot, housing all critical electronics within a compact and structured enclosure:
+
+\begin{itemize}
+    \item A \textbf{Raspberry Pi 5} acts as the master controller, serving as the brain of the system and handling high-level decision making, gait coordination, and communication.
+    \item An \textbf{STM32 L432KC} microcontroller operates as the slave, receiving commands from the Raspberry Pi 5 and directly managing the 12 servo motors responsible for leg movement.
+    \item A \textbf{LiPo battery} provides the power supply for both the electronics and servo systems, selected for its high energy density and lightweight form factor.
+\end{itemize}
+
+The body was designed to distribute the weight of these components evenly across the frame, ensuring balanced load distribution across all four legs and contributing to overall walking stability.
+
+\subsection*{Leg Design}
+
+Each leg consists of multiple printed segments articulated across three joints, designed to match the range of motion of the servo motors at each degree of freedom. To reduce the total number of unique parts and simplify both the CAD assembly and physical build, the legs were designed as mirrored pairs. The left and right side legs share the same geometry, mirrored along the body's longitudinal axis, which also ensured symmetric weight distribution.
+
+\subsection*{Final 3D Model}
+
+The completed SolidWorks assembly integrates all printed parts, servo placements, electronics housings, and cable routing channels into a single cohesive model. Clearances were verified within the CAD environment to ensure no interference between moving leg segments and the body structure during operation. The final model represents a complete and build-ready design that was successfully translated into the physical robot with minimal deviation from the original specifications.
+\section{Mechanical Issues Encountered}
+
+\subsection*{Overview}
+
+Several mechanical issues emerged during the walking trial phase of the project. These challenges provided valuable insight into the physical limitations of the design and the components selected, and each was addressed through targeted corrective actions.
+
+\subsection*{Joint Misalignment}
+
+During walking trials, misalignment was observed at several leg joints, causing unintended angular offsets between connected segments. This affected the smoothness of leg trajectories and introduced inconsistencies in the gait pattern. The issue was traced back to cumulative tolerance errors across multiple printed parts and was resolved through reprinting the affected components with tighter dimensional tolerances.
+
+\subsection*{Part Breakage and Wear During Testing}
+
+Certain printed parts experienced fractures or structural failure when subjected to the dynamic loads generated during walking. These failures occurred primarily at stress concentration points such as thin walls and joint interfaces. As shown in Figure \ref{fig:broken_part}, the lower section of the leg component suffered a complete structural failure, with the internal infill and outer walls fragmenting under repeated loading.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.34\textwidth,height=0.42\textheight,keepaspectratio]{images/1.jpeg}
+    \caption{Structural failure of a printed leg component under dynamic loading.}
+    \label{fig:broken_part}
+\end{figure}
+
+Additionally, the servo horn attachment points on several printed parts degraded over time due to the repeated screwing and unscrewing required during iterative assembly and testing. Affected parts were reprinted with revised geometry to improve durability and load distribution at these critical locations.
+
+\subsection*{Spaghettification During Printing}
+
+A recurring issue during the PLA prototyping phase was spaghettification, where print adhesion failures mid-print caused the extruded filament to detach from the build plate and form tangled masses of loose material rather than solid parts. Figure \ref{fig:spaghettification} illustrates a severe instance of this failure, where multiple parts on the same print bed were rendered completely unusable. This was resolved by adjusting print speed settings, which significantly improved bed adhesion and print consistency.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.34\textwidth,height=0.42\textheight,keepaspectratio]{images/2.jpeg}
+    \caption{Spaghettification failure during PLA prototyping phase.}
+    \label{fig:spaghettification}
+\end{figure}
+
+\subsection*{Servo Motor Failures and Replacement}
+
+The most significant mechanical challenge encountered throughout the project was the failure of the original MG995 servo motors. Two distinct failure modes were identified:
+
+\begin{itemize}
+    \item \textbf{Internal gear wear:} The plastic gears within several motors were progressively destroyed by the friction and load demands of the quadruped walking motion, rendering them mechanically unable to transmit torque.
+    \item \textbf{Driver burnout:} The motor drivers of several units burned out under sustained electrical and mechanical stress, completely disabling the affected motors. Figure \ref{fig:burned_driver} shows the exposed PCB of a failed MG995 motor with a burned driver circuit.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.34\textwidth,height=0.42\textheight,keepaspectratio]{images/3.jpeg}
+    \caption{Burned motor driver PCB of a failed MG995 servo motor.}
+    \label{fig:burned_driver}
+\end{figure}
+
+The scale of these failures was considerable. Out of a total of 22 MG995 motors procured over the course of the project, only 12 were needed for the final build. The remaining 10 were rendered unusable due to either gear destruction or driver burnout. Figure \ref{fig:disassembled_motors} shows disassembled MG995 motors alongside their brass gear sets, illustrating the extent of wear and the complexity of the internal mechanism that was subject to failure.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.42\textwidth,height=0.42\textheight,keepaspectratio]{images/4.jpeg}
+    \caption{Disassembled MG995 servo motors with exposed brass gear sets.}
+    \label{fig:disassembled_motors}
+\end{figure}
+
+\FloatBarrier
+
+To resolve these issues, all MG995 motors were replaced with S1500M servo motors, which offered significantly improved mechanical durability and better resistance to the sustained gear loading experienced during walking trials. This upgrade fully resolved the motor reliability issues, resulting in stable and consistent joint performance in subsequent testing.
+\section{Conclusion}
+
+This section summarizes the key mechanical outcomes of the quadruped robot project, reflecting on the design decisions made, the challenges encountered, and the lessons drawn from the physical build and testing phases.
+
+The mechanical design of the robot was largely successful in achieving its core structural objectives. The modular 3D printed assembly proved effective for rapid iteration, and the transition from PLA to ABS yielded a significantly more durable final build. The leg geometry, joint configuration, and fastening strategy all performed as intended, with only minor tolerance adjustments required during assembly.
+
+However, the most impactful mechanical challenge encountered was the underestimation of the demands placed on the servo motors. The MG995 motors, while widely used in similar applications, proved insufficient for the continuous friction and gear loading generated during walking trials, resulting in both internal gear destruction and driver burnout across 10 out of 22 motors procured. This experience highlighted that servo motor selection is one of the most critical mechanical decisions in a legged robot design, as it directly affects the reliability, longevity, and performance of the entire system.
+
+Looking ahead, two key mechanical improvements would be prioritized in a future iteration of this project. First, higher-rated servo motors capable of sustaining the dynamic loads of quadruped locomotion would be selected from the outset, avoiding the costly and time-consuming motor replacement process experienced during this build. Second, high-stress parts such as leg joints and servo horn attachment points would be printed using more impact-resistant materials or reinforced geometries to better withstand the repeated mechanical loading of walking trials.
+
+Despite these challenges, the project provided an invaluable hands-on understanding of the mechanical complexities involved in designing and building a functional quadruped robot, and established a solid foundation for continued development.
+\end{document}
