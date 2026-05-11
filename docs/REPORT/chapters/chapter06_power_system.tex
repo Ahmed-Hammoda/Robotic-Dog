@@ -8,8 +8,12 @@ via a single switching regulator.
 
 % ----------------------------------------------------------------
 \section{Power System Overview}
-% INSERT DIAGRAM HERE
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/robodog_electrical.png}
+    \caption{Power Diagram}
+    \label{fig:Power Diagram}
+\end{figure}
 The power system is designed around a single LiPo 2S battery supplying all onboard subsystems 
 through two dedicated power rails. The first rail services the servo motor subsystem, where two 
 XL4016 DC/DC buck converters each regulate the battery voltage down to 5.5\,V, one per servo 
