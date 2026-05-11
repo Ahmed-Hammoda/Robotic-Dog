@@ -1,15 +1,143 @@
-\chapter{Power System Architecture and Energy Management}
+\chapter{Power System Energy Management}
 
+The robot is powered from a LiPo 2S battery with a nominal voltage of 7.4V and a maximum 
+capacity of 6000\,mAh. This battery serves as the sole power source for all onboard systems. 
+Power is distributed through two dedicated voltage rails: one supplying the servo motor 
+subsystem via two switching regulators, and one supplying the computing and control subsystem 
+via a single switching regulator.
+
+% ----------------------------------------------------------------
 \section{Power System Overview}
+% INSERT DIAGRAM HERE
 
-\section{Battery Architecture and Runtime Estimation}
+The power system is designed around a single LiPo 2S battery supplying all onboard subsystems 
+through two dedicated power rails. The first rail services the servo motor subsystem, where two 
+XL4016 DC/DC buck converters each regulate the battery voltage down to 5.5\,V, one per servo 
+motor driver. Each driver manages six servo motors, for a total of twelve across the robot, and 
+is rated for a maximum throughput of 8\,A. The second rail services the computing and control 
+subsystem, where a single XL4015 buck converter regulates the battery voltage down to 5.2\,V, 
+supplying both the STM32 microcontroller and the Raspberry Pi 5 from a single output rated at 
+5\,A maximum. No additional protection circuitry is present in the power path.
 
-\section{Converter Topology and Voltage Regulation}
+% ----------------------------------------------------------------
+\section{Battery Architecture, Power Distribution, and Runtime Estimation}
 
-\section{Power Distribution and Component Allocation}
+\subsection{Battery Architecture}
 
+The battery is a 2S LiPo pack with a nominal voltage of 7.4\,V and a fully charged voltage of 
+8.4\,V. The pack is composed of parallel cells, yielding a total capacity of 6000\,mAh 
+(44.4\,Wh). The parallel cell configuration increases the available capacity and current 
+delivery capability while maintaining the 2S series voltage level.
+
+Power is distributed from the battery terminal to two independent rails as summarised in 
+Table~\ref{tab:power_rails}.
+
+\begin{table}[h]
+    \centering
+    \caption{Power Rail Summary}
+    \label{tab:power_rails}
+    \begin{tabular}{|l|c|c|c|l|}
+        \hline
+        \textbf{Rail} & \textbf{Regulator} & \textbf{Output Voltage} & \textbf{Max Current} & \textbf{Loads} \\
+        \hline
+        Servo Rail 1  & XL4016 & 5.5\,V & 8\,A & 6 $\times$ Servo Motors \\
+        Servo Rail 2  & XL4016 & 5.5\,V & 8\,A & 6 $\times$ Servo Motors \\
+        Compute Rail  & XL4015 & 5.2\,V & 5\,A & Raspberry Pi 5, STM32 MCU \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Full-Load Power Distribution}
+
+The full-load current draw for each subsystem is as follows:
+
+\begin{itemize}
+    \item Each servo motor draws approximately 1.2\,A at full load. With twelve motors split 
+          evenly across two drivers, each driver supplies $6 \times 1.2 = 7.2$\,A.
+    \item The Raspberry Pi 5 draws up to 5\,A.
+    \item The STM32 microcontroller draws approximately 500\,mA.
+    \item The compute rail total draw is therefore $5 + 0.5 = 5.5$\,A.
+\end{itemize}
+
+The total system current demand at full load is summarised in Table~\ref{tab:current_draw}.
+
+\begin{table}[h]
+    \centering
+    \caption{Full-Load Current Draw by Subsystem}
+    \label{tab:current_draw}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Subsystem} & \textbf{Current Draw (A)} & \textbf{Rail} \\
+        \hline
+        6 $\times$ Servo Motors (Driver 1) & 7.2  & Servo Rail 1 \\
+        6 $\times$ Servo Motors (Driver 2) & 7.2  & Servo Rail 2 \\
+        Raspberry Pi 5                     & 5.0  & Compute Rail \\
+        STM32 MCU                          & 0.5  & Compute Rail \\
+        \hline
+        \textbf{Total}                     & \textbf{19.9} & --- \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Runtime Estimation}
+
+The theoretical runtime at full load is estimated using:
+
+\begin{equation}
+    t = \frac{C}{I_{\text{total}}}
+    \label{eq:runtime}
+\end{equation}
+
+\noindent where $C$ is the battery capacity in ampere-hours and $I_{\text{total}}$ is the total 
+current draw in amperes. Substituting the values:
+
+\begin{equation}
+    t = \frac{6.0\,\text{Ah}}{19.9\,\text{A}} \approx 0.30\,\text{h} \approx 18\,\text{minutes}
+\end{equation}
+
+This figure represents a theoretical lower bound under simultaneous full actuation of all servo 
+motors and peak compute load. In practice, not all servo motors will be at peak draw 
+simultaneously, and the Raspberry Pi 5 will seldom sustain its maximum current draw, so 
+operational runtime is expected to exceed this estimate under normal working conditions.
+
+% ----------------------------------------------------------------
 \section{Power Circuit Design and Load Path}
 
-\section{Energy Efficiency and Battery Life Analysis}
+\subsection{Load Path}
 
-\section{Protection and Management Strategy}
+Battery power flows from the LiPo pack through the main power distribution node, from which 
+the three switching regulators are fed in parallel. Each XL4016 regulator drives its dedicated 
+servo motor driver, and the XL4015 regulator drives the compute rail shared by the Raspberry 
+Pi 5 and the STM32 MCU.
+
+\subsection{Wiring}
+
+All power wiring throughout the system uses 18\,AWG wire. The current-carrying capacity of 
+18\,AWG copper wire is typically rated at approximately 16\,A in free air for chassis wiring, 
+which is sufficient for the individual rail currents in this design. Table~\ref{tab:wiring} 
+summarises the wire assignments and the corresponding maximum currents on each segment.
+
+\begin{table}[h]
+    \centering
+    \caption{Wiring Summary}
+    \label{tab:wiring}
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Segment}                  & \textbf{Wire Gauge} & \textbf{Max Current (A)} \\
+        \hline
+        Battery to distribution node      & 18\,AWG & 19.9 \\
+        Distribution node to XL4016 \#1   & 18\,AWG & 7.2  \\
+        Distribution node to XL4016 \#2   & 18\,AWG & 7.2  \\
+        Distribution node to XL4015       & 18\,AWG & 5.5  \\
+        XL4016 \#1 to Servo Driver 1      & 18\,AWG & 7.2  \\
+        XL4016 \#2 to Servo Driver 2      & 18\,AWG & 7.2  \\
+        XL4015 to Raspberry Pi 5          & 18\,AWG & 5.0  \\
+        XL4015 to STM32 MCU               & 18\,AWG & 0.5  \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\noindent It should be noted that the battery-to-distribution segment carries the full system 
+current of up to 19.9\,A at peak load. While 18\,AWG wire is within rated limits for this 
+current, careful attention to wire length and thermal conditions is advised for this segment 
+in particular to minimise resistive losses and heat generation.
