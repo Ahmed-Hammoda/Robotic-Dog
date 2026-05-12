@@ -1,1 +1,0 @@
-# RoboDog Vision Package
